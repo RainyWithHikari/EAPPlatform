@@ -1,19 +1,13 @@
 ﻿using EAP.Dashboard.Models;
-using Microsoft.Kiota.Abstractions;
 using OfficeOpenXml;
 using OfficeOpenXml.Drawing.Chart;
-using Org.BouncyCastle.Asn1.Ocsp;
-using SixLabors.ImageSharp.PixelFormats;
 using SqlSugar;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
-using System.Web;
-using System.Web.Helpers;
 using System.Web.Mvc;
-using System.Windows;
 
 namespace EAP.Dashboard.Controllers
 {
