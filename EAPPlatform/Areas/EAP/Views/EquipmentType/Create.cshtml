@@ -1,0 +1,21 @@
+﻿
+@model EAPPlatform.ViewModel.EAP.EquipmentTypeVMs.EquipmentTypeVM
+@using WalkingTec.Mvvm.Core.Extensions;
+@inject IStringLocalizer<Program> Localizer;
+
+<wt:container>
+  <wt:form vm="@Model" url="/EAP/EquipmentType/Create" >
+    <wt:row  items-per-row="ItemsPerRowEnum.Two">
+      <wt:textbox field="Entity.Name"/>
+    </wt:row>
+
+    <wt:container align="AlignEnum.Right">
+      <wt:submitbutton  text="@Localizer["Sys.Submit"]"/>
+      <wt:closebutton  text="@Localizer["Sys.Close"]"/>
+    </wt:container>
+
+  </wt:form>
+
+</wt:container>
+
+

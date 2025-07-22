@@ -1,0 +1,190 @@
+﻿@{
+    ViewBag.Title = "下载报表";
+}
+<html>
+<head>
+    <link rel="stylesheet" href="~/Content/font-awesome/css/font-awesome.css">
+    <link rel="stylesheet" href="~/Content/font/iconfont.css">
+    <link rel="stylesheet" href="~/Content/bootstrap.min.css" />
+    <script type="text/javascript" src="~/Scripts/jquery-3.4.1.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/echartjs/dist/echarts.js"></script>
+
+    <link rel="shortcut icon" href="~/Scripts/favicon.ico" />
+    <link rel="stylesheet" href="~/Scripts/layui/css/layui.css" media="all">
+    <script type="text/javascript" src="~/Scripts/layui/layui.js"></script>
+
+</head>
+<body>
+    <div class="dashboard-container" style="padding:3%;">
+        <form class="layui-form" action="">
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">开始</label>
+                <div class="layui-input-block">
+                    <input id="startdateFilter" type="text" name="startdate" required lay-verify="required" placeholder="请选择日期" autocomplete="off" class="layui-input">
+                </div>
+
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">结束</label>
+                <div class="layui-input-block">
+                    <input id="dateFilter" type="text" name="date" required lay-verify="required" placeholder="请选择日期" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-mid layui-word-aux">导出报表说明：</div>
+            <div class="layui-form-mid layui-word-aux">1. Alarm数据统计时间：每天 5:00 am（即今日报警数据于明日5：00计算）</div>
+            <div class="layui-form-mid layui-word-aux">2. 如需导出单日报表，请将开始与结束设置为同一日期。</div>
+            <div class="layui-form-mid layui-word-aux">eg. 导出2024/11/11报表数据，选择：开始=11/11, 结束=11/11</div>
+            @*<div class="layui-form-item">
+            <label class="layui-form-label">报表时间范围</label> 
+            <div class="layui-input-block">
+                <input type="radio" name="Duration" value="single" title="单日" checked>
+                <input type="radio" name="Duration" value="multiple" title="前七天(包含选择日期）">
+            </div>
+        </div>*@
+            @*<div class="layui-form-item">
+            <label class="layui-form-label">设备</label>
+            <div class="layui-input-block">
+                <select name="equipmentFilter" lay-verify="required">
+                </select>
+            </div>
+        </div>*@
+            <div class="layui-form-item">
+                <label class="layui-form-label">设备</label>
+                <div class="layui-input-block " id="eqpFilter">
+                    @*<input type="checkbox" name="all" title="all" id="selectAll" value="all">*@
+
+                    <input type="checkbox" class="checkbox-item" name="EQID[1]" title="SMD-901" value="SMD-901" checked>
+                    <input type="checkbox" class="checkbox-item" name="EQID[2]" title="SMD-902" value="SMD-902">
+                    <input type="checkbox" class="checkbox-item" name="EQID[3]" title="SMD-900" value="SMD-900">
+
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">种类</label>
+                <div class="layui-input-block">
+
+                    <input type="checkbox" name="report[alarmcode]" title="Alarm Code 统计报表" value="alarm_code_report" checked>
+                    <input type="checkbox" name="report[fail]" title="拆料失败明细" value="fail_report" checked>
+                    @*<input type="checkbox" name="report[alarm]" title="报警明细" value="alarm_report">*@
+                    <input type="checkbox" name="report[status]" title="设备状态明细" value="status_report">
+                    <input type="checkbox" name="report[output]" title="生产明细" value="output_report">
+
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn" lay-submit lay-filter="formDownload" id="formDownload">下载报表</button>
+                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                </div>
+            </div>
+        </form>
+
+    </div>
+    <script>
+        layui.use(['jquery', 'form', 'laydate'], function () {
+            var laydate = layui.laydate
+                , form = layui.form
+                , $ = layui.jquery;
+
+            //执行一个laydate实例
+            laydate.render({
+                elem: '#dateFilter' //指定元素
+
+            });
+
+            //执行一个laydate实例
+            laydate.render({
+                elem: '#startdateFilter' //指定元素
+
+            });
+
+            //监听提交
+            form.on('submit(formDownload)', function (data) {
+                console.log(data.field)
+                //layer.msg(JSON.stringify(data.field));
+                var originalObject = data.field
+                var eqps = Object.keys(originalObject) // 获取对象的所有属性名
+                    .filter(key => key.startsWith('EQID')) // 筛选出以EQID开头的属性名
+                    .map(key => originalObject[key]); // 获取这些属性对应的值并存入新数组
+
+                var startdate = data.field.startdate;
+                var date = data.field.date;
+                if (startdate > date) {
+                    layer.alert("开始时间不可小于结束时间！");
+                    return false;
+                }
+                //var duration = data.field.Duration;
+                var reports = Object.keys(originalObject) // 获取对象的所有属性名
+                    .filter(key => key.startsWith('report')) // 筛选出以EQID开头的属性名
+                    .map(key => originalObject[key]); // 获取这些属性对应的值并存入新数组
+                //console.log(date)
+                //console.log(duration)
+                //console.log(reports)
+                if (originalObject.hasOwnProperty('all')) {
+                    eqps = ['SMD-901', 'SMD-902']
+                }
+                if (eqps.length == 0) {
+                    layer.msg("请选择设备！")
+                    return false;
+                }
+                layer.msg("报表下载中，请稍后……");
+                // 禁用确认按钮
+                var $confirmBtn = $('#formDownload');
+                $confirmBtn.addClass('layui-btn-disabled').attr('disabled', true).text('数据计算中...');
+                DownloadData(eqps, date, startdate, reports)
+
+                return true;
+            });
+
+
+            function DownloadData(eqps, date, startdate, reports) {
+                // 禁用下载按钮
+                //var $confirmBtn = $(elem).parents('.layui-layer').find('.layui-layer-btn0');
+                //$confirmBtn.addClass('layui-btn-disabled').attr('disabled', true).text('downloading...');
+
+                $.ajax({
+                    type: 'post',
+                    xhrFields: {
+                        responseType: 'blob' // 设置响应类型为二进制数据流
+                    },
+                    data: {
+                        "eqps": eqps,
+                        "datetime": date,
+                        "starttime": startdate,
+                        "reports": reports
+                    },
+                    url: 'DownloadReportData',
+                    success: function (data) {
+                        var blob = new Blob([data], { type: 'application/octet-stream' });
+                        var link = document.createElement('a');
+                        link.href = window.URL.createObjectURL(blob);
+                        link.download = startdate+'_'+ date + '_拆料头.zip'; // 下载的文件名
+                        document.body.appendChild(link);
+                        link.click();
+
+                        layer.msg('<em style="color:white;font-style:normal;font-weight:normal">' + '下载成功！' + '</em>');
+
+                        var $confirmBtn = $('#formDownload');
+                        $confirmBtn.removeClass('layui-btn-disabled').removeAttr('disabled').text('下载报表');
+                        document.body.removeChild(link);
+                        //$confirmBtn.removeClass('layui-btn-disabled').removeAttr('disabled').text('确认');
+                       
+                    },
+                    error: function (err) {
+                        layer.msg('<em style="color:white;font-style:normal;font-weight:normal">' + '下载失败！' + '</em>');
+
+                        var $confirmBtn = $('#formDownload');
+                        $confirmBtn.removeClass('layui-btn-disabled').removeAttr('disabled').text('下载报表');
+                        document.body.removeChild(link);
+                        console.log(err)
+                    }
+                });
+            }
+        });
+    </script>
+
+</body>
+</html>

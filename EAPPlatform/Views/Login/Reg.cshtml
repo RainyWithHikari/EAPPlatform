@@ -1,0 +1,12 @@
+﻿@model EAPPlatform.ViewModel.HomeVMs.RegVM
+
+<p style="text-align:center;margin-top:10px;font-size:16px">@Model.Localizer["Login.RegTitle"]</p>
+<wt:form vm="@Model">
+  <wt:textbox field="ITCode" />
+  <wt:textbox field="Name" />
+  <wt:textbox is-password="true" field="Password" />
+  <wt:textbox is-password="true" field="NewPasswordComfirm" />
+  <wt:row align="AlignEnum.Center">
+    <wt:submitbutton size=" ButtonSizeEnum.Normal" />
+  </wt:row>
+</wt:form>

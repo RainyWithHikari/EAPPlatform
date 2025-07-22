@@ -1,0 +1,61 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <script src="/jquery.min.js"></script>
+    <link rel="stylesheet" href="/layui/css/layui.css" media="all">
+    <script src="/layui/layui.table.formdate.js"></script>
+    <script src="/layui/layui.js"></script>
+</head>
+<body>
+    <div class="layui-row">
+        <div class="layui-col-md12">
+            <div class="grid-demo grid-demo-bg1">
+                <table class="layui-hide" id="details" lay-filter="details"></table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+
+        layui.use(['form', 'layer', 'table'], function () {
+            var form = layui.form;
+            var table = layui.table;
+            var $ = layui.jquery;
+
+            var filterprod = JSON.parse(parent.strprod);
+            var str = filterprod.join(",");
+            console.log(str);
+
+            var configtable = table.render({
+                elem: '#details'
+                , height: 'full'
+                , title: 'Config'
+                , id: "details"
+                , toolbar: '#headtoolbar'
+                , url: '/Statistics/EquipmentDashboard/GetAlarmDetailsData'
+                , cols: [[ //表头
+
+                    { field: 'Equipment', title: 'Handler', sort: true }
+                    , { field: 'OccuredDate', title: 'OccuredDate', sort: true }
+                    , { field: 'OccuredTime', title: 'OccuredTime', sort: true }
+                    , { field: 'AlarmId', title: 'ALID', sort: true }
+                    , { field: 'Part', title: 'PART', sort: true }
+                    , { field: 'Message', title: 'Message', sort: true }
+                    , { field: 'Recovery', title: 'Recovery', sort: true }
+                    , { field: 'StopTime', title: 'StopTime', sort: true }
+                ]]
+                , where: {
+                    date: '@ViewBag.date',
+                    alarmtype: '@ViewBag.alarmtype',
+                    strprod: str
+                }
+            });
+
+        });
+
+
+    </script>
+</body>
+</html>

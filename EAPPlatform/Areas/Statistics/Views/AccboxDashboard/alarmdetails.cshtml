@@ -1,0 +1,316 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="/layui/css/layui.css" media="all">
+    <link rel="stylesheet" href="/font/iconfont.css">
+    <link rel="stylesheet" href="/font-awesome/css/font-awesome.css">
+    <link rel="shortcut icon" href="/favicon.ico" />
+
+
+
+</head>
+<body>
+    <script src="/jquery.min.js"></script>
+    <script src="/echarts.js"></script>
+    <script src="/layui/layui.js"></script>
+
+    <script>
+        layui.use(['table', 'jquery', 'laydate'], function () {
+            var table = layui.table
+                , $ = layui.jquery
+                , form = layui.form
+                , laydate = layui.laydate;
+
+            
+            var eqp = "@ViewBag.EQID";
+            var week = "@ViewBag.week";
+            //document.getElementById("equipment").nodeValue = eqp;
+            //console.log(eqp);
+            //console.log(week);
+            getAlarmDetails(eqp,week);
+            function getAlarmDetails(EQID,week){
+                     $.ajax({
+                         type: 'post',
+                         dataType: 'json',
+                         data: {
+                             "EQID":EQID,
+                             "week": week
+                         },
+                         url: '/Statistics/ACCBoxDashboard/GetAlarmDetails',
+                         success: function (retdata) {
+                           //alert(retdata.result);
+                           var alarmlist = retdata.alarmList;
+                           var alarmall = retdata.alarmtotal;
+                           table.render({
+                            elem: '#alarmhist'
+                            , cols: [[ //标题栏
+                                { field: 'AlarmCode', title: 'AlarmCode' }
+                                , { field: 'AlarmText', title: 'AlarmText' }
+                                , { field: 'StartTime', title: 'StartTime' }
+                                , { field: 'EndTime', title: 'EndTime' }
+                                , { field: 'Duration', title: 'Duration(min)' }
+                            ]]
+                            , data: alarmlist
+                            , size: 'sm'
+                            , even: true
+                            ,limit:alarmlist.length
+                        });
+                        table.render({
+                            elem: '#alarmall'
+                            , cols: [[ //标题栏
+                                 //{ field: 'Date', title: 'Date' }
+                                 { field: 'AlarmCode', title: 'AlarmCode' }
+                               , { field: 'AlarmText', title: 'AlarmText' }
+                               , { field: 'Duration', title: 'Duration(min)' }
+                            ]]
+                            , data: alarmall
+                            , size: 'sm'
+                            , even: true
+                            ,limit:alarmall.length
+                        });
+                         },
+                         error: function () {
+                            alert("error!");
+                         }
+                     });
+                 }
+
+        })
+
+
+        function getdatechart(id, chartdata) {
+            var chartDom = document.getElementById(id);
+            var myChart = echarts.init(chartDom);
+
+            $(window).on('resize', function () {
+                //屏幕大小自适应，重置容器高宽
+                chartDom.style.width = window.innerWidth * 0.8 + 'px';
+                chartDom.style.height = window.innerHeight * 0.4 + 'px';
+                myChart.resize();
+            });
+            chartDom.style.width = window.innerWidth * 0.8 + 'px';
+            chartDom.style.height = window.innerHeight * 0.4 + 'px';
+
+            function renderItem(params, api) {
+                var categoryIndex = api.value(0);//value第一个参数
+                console.log(categoryIndex);
+                var start = api.coord([api.value(1), categoryIndex]);
+                var end = api.coord([api.value(2), categoryIndex]);
+                console.log(start);
+                console.log(end);
+                var height = api.size([0, 1])[1] * 0.6;
+
+                var rectShape = echarts.graphic.clipRectByRect({
+                    x: start[0],
+                    y: start[1] - height / 2,
+                    width: end[0] - start[0],
+                    height: height
+                }, {
+                    x: params.coordSys.x,
+                    y: params.coordSys.y,
+                    width: params.coordSys.width,
+                    height: params.coordSys.height
+                });
+
+                return rectShape && {
+                    type: 'rect',
+                    transition: ['shape'],
+                    shape: rectShape,
+                    style: api.style()
+                };
+            }
+
+            option = {
+                tooltip: {
+                    formatter: function (params) {
+                        if (params.data.alarmtext == "")
+                                return params.marker + params.name + ': ' + params.value[1] + ' ~ ' + params.value[2] + ' Duration: ' + params.data.duration;
+                        else
+                                return params.marker + params.name + ': ' + params.value[1] + ' ~ ' + params.value[2] + ' Duration: ' + params.data.duration + '<br>AlarmText:<br>' + params.data.alarmtext;
+                    }
+                },
+                title: {
+                    text: 'Status Details'
+                },
+                dataZoom: [{
+                    type: 'slider',
+                    filterMode: 'weakFilter',
+                    showDataShadow: false,
+                    //top: 400,
+                    labelFormatter: ''
+                }, {
+                    type: 'inside',
+                    filterMode: 'weakFilter'
+                }],
+                grid: {
+                    //height: 300
+                },
+                xAxis: {
+                    scale: true,
+                    type: 'time'
+
+                },
+                yAxis: {
+                    data: ['Status']
+                },
+                series: [{
+                    type: 'custom',
+                    renderItem: renderItem,
+                    // itemStyle: {
+                    //     opacity: 0.8
+                    // },
+                    encode: {
+                        x: [1, 2],
+                        y: 0
+                    },
+                    data: chartdata
+                }]
+            };
+
+            option && myChart.setOption(option);
+            myChart.resize();
+        }
+
+        function gettrendchart(id, trenddates, trendmtbas, trendrunrates) {
+            var chartDom = document.getElementById(id);
+            var myChart = echarts.init(chartDom);
+
+            $(window).on('resize', function () {//
+                //屏幕大小自适应，重置容器高宽
+                chartDom.style.width = window.innerWidth * 0.8 + 'px';
+                chartDom.style.height = window.innerHeight * 0.4 + 'px';
+                myChart.resize();
+            });
+            chartDom.style.width = window.innerWidth * 0.8 + 'px';
+            chartDom.style.height = window.innerHeight * 0.4 + 'px';
+
+            var option;
+
+            option = {
+                title: {
+                    text: 'Runrate & MTBA Trends'
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'cross'
+                    }
+                },
+                legend: {
+                    data: ['MTBA', 'Run Rate']
+                },
+                grid: {
+
+                },
+                xAxis: {
+                    type: 'category',
+                    axisTick: {
+                        alignWithLabel: true
+                    },
+                    data: trenddates
+                },
+                yAxis: [
+                    {
+                        type: 'value',
+                        name: 'MTBA',
+                        position: 'left',
+                        min: 0,
+                        max: 1440,
+                        splitLine: {     //网格线
+                            show: false
+                        }
+                    },
+                    {
+                        type: 'value',
+                        name: 'Run rate',
+                        min: 0,
+                        max: 100,
+                        position: 'right',
+                        splitLine: {     //网格线
+                            show: false
+                        },
+                        axisLabel: {
+                            formatter: '{value} %'
+                        }
+                    }],
+                series: [
+                    {
+                        name: 'MTBA',
+                        type: 'line',
+                        data: trendmtbas,
+                        label: {
+                            show: true,
+                            position: 'top'
+                        },
+                    },
+                    {
+                        name: 'Run Rate',
+                        type: 'line',
+                        yAxisIndex: 1,
+                        data: trendrunrates,
+                        label: {
+                            show: true,
+                            position: 'top',
+                            formatter: '{c} %'
+                        },
+
+                    }
+                ]
+            };
+            option && myChart.setOption(option);
+            myChart.resize();
+
+
+        }
+
+    </script>
+    <form class="layui-form layui-form-pane" action="" style="width: 60%;margin: 0 auto;margin-top: 20px">
+        <div class="layui-form-item">
+            <label class="layui-form-label">Equipment</label>
+            <div class="layui-input-inline">
+                <input id="equipment" class="layui-input" lay-filter="equipment" >
+            </div>
+            <label class="layui-form-label">Week</label>
+            <div class="layui-input-inline">
+                <input type="text" class="layui-input" id="week" lay-filter="week" >
+            </div>
+        </div>
+    </form>
+    <div style="width: 60%;margin: 0 auto;margin-top: 20px">
+        <table class="layui-hide" id="summary" style="width: 60%;margin: 0 auto;margin-top: 20px"> </table>
+    </div>
+    <div class="layui-tab layui-tab-brief" lay-filter="docDemoTabBrief" style="width: 80%;margin: 0 auto;margin-top: 20px">
+    <ul class="layui-tab-title">
+        <li class="layui-this">General</li>
+        <li>Alarm List</li>
+
+        
+    </ul>
+    <div class="layui-tab-content" style="height: 100px;">
+        <div class="layui-tab-item layui-show">
+             <table class="layui-hide" id="alarmall" style="width: 60%;margin: 0 auto;margin-top: 20px"> </table>
+        </div>
+        <div class="layui-tab-item">
+      
+        <table class="layui-hide" id="alarmhist" style="width: 60%;margin: 0 auto;margin-top: 20px"> </table>
+
+        </div>
+        <div class="layui-tab-item">
+      
+        <table class="layui-hide" id="paramlist" style="width: 60%;margin: 0 auto;margin-top: 20px"> </table>
+
+        </div>
+        
+    </div>
+
+</div>
+   @* <div id="datechart" style="width: 60%;margin: 0 auto;margin-top: 20px"></div>
+    <div id="trendchart" style="width: 60%;margin: 0 auto;margin-top: 20px"></div>*@
+   @* <div style="width: 60%;margin: 0 auto;margin-top: 20px">
+        <table class="layui-hide" id="alarmhist" style="width: 60%;margin: 0 auto;margin-top: 20px"> </table>
+    </div>*@
+</body>
+
+
+
+</html>

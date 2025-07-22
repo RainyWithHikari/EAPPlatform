@@ -1,0 +1,20 @@
+﻿
+@model EAPPlatform.ViewModel.EAP.EquipmentConfigurationVMs.EquipmentConfigurationBatchVM
+@using WalkingTec.Mvvm.Core.Extensions;
+@inject IStringLocalizer<Program> Localizer;
+
+<wt:form vm="@Model" url="/EAP/EquipmentConfiguration/DoBatchEdit?1=1">
+  <wt:row  items-per-row="ItemsPerRowEnum.Three">
+   @* <wt:display field="LinkedVM.EQID.EQID" id="g8564460423"/>*@
+  </wt:row>
+
+  <wt:container align="AlignEnum.Right">
+    <wt:submitbutton  text="@Localizer["Sys.Submit"]"/>
+    <wt:closebutton  text="@Localizer["Sys.Close"]"/>
+  </wt:container>
+
+  <wt:hidden field="Ids" />
+  <wt:grid vm="ListVM" use-local-data="true" height="300" hidden-checkbox="true" hidden-panel="true" />
+</wt:form>
+
+

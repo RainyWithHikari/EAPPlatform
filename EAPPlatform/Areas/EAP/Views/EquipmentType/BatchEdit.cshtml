@@ -1,0 +1,21 @@
+﻿
+@model EAPPlatform.ViewModel.EAP.EquipmentTypeVMs.EquipmentTypeBatchVM
+@using WalkingTec.Mvvm.Core.Extensions;
+@inject IStringLocalizer<Program> Localizer;
+
+<wt:form vm="@Model" url="/EAP/EquipmentType/DoBatchEdit?1=1">
+  <div style="margin-bottom:10px;"> @Localizer["Sys.BatchEditConfirm"]</div>
+  <wt:row  items-per-row="ItemsPerRowEnum.Two">
+    <wt:textbox field="LinkedVM.Name"/>
+  </wt:row>
+
+  <wt:container align="AlignEnum.Right">
+    <wt:submitbutton  text="@Localizer["Sys.Submit"]"/>
+    <wt:closebutton  text="@Localizer["Sys.Close"]"/>
+  </wt:container>
+
+  <wt:hidden field="Ids" />
+  <wt:grid vm="ListVM" use-local-data="true" height="300" hidden-checkbox="true" hidden-panel="true" />
+</wt:form>
+
+

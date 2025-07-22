@@ -1,0 +1,217 @@
+﻿@{
+    ViewBag.Title = "智能仓储看板";
+}
+<html>
+<head>
+
+
+    <link rel="stylesheet" href="~/Content/WarehouseDashboard.css?v=0.1" />
+    <link rel="stylesheet" href="~/Content/font-awesome/css/font-awesome.css">
+    <link rel="stylesheet" href="~/Content/font/iconfont.css">
+    <link rel="stylesheet" href="~/Content/bootstrap.min.css" />
+
+    <script src="~/Scripts/layui/layui.table.formdate.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery-3.4.1.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/echartjs/dist/echarts.js"></script>
+
+    @*<link rel="stylesheet" href="~/Scripts/layui-2.7.6/css/layui.css">
+        <script type="text/javascript" src="~/Scripts/layui-2.7.6/layui.js"></script>*@
+
+    <link rel="shortcut icon" href="~/Scripts/favicon.ico" />
+    <link rel="stylesheet" href="~/Scripts/layui/css/layui.css" media="all">
+    <script type="text/javascript" src="~/Scripts/layui/layui.js"></script>
+    <script type="module" charset="utf-8" src="~/Scripts/WarehouseDashboard.js?v=0.2"></script>
+</head>
+<body>
+
+    @*<div class="spinner-border text-light" role="status" id="loading">
+
+        </div>*@
+
+
+    <div class="dashboard-container">
+        <div class="item bi-1 row" id="dashboard-title">
+            <div class='col-2 logo'><img src="~/Content/Pictures/logo/Logo_W_SMDi4_400x65_简.png" /> </div>
+            <div class='col-8 row'>
+                <h2 class='col-12' id="title">ZJ 智能立库</h2>
+                <h3 class='col-12' id="" style="font-weight:bold;">ZJ Smart Warehouse</h3>
+
+            </div>
+
+            <div class="col-2 row">
+                <div class="col-12" style="margin-top: 10px; justify-content: right;">
+
+                    <div class="input-group">
+                        <button class="btn btn-group btn-secondary" type="button" onclick="showFullScreen()">
+                            Full Screen
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="item bi-2 row " id="trend-rate-1">
+            @*7存发料达成率 趋势*@
+
+        </div>
+
+        <div class="item bi-3 row" id="achieve_rate">
+            @*7存发料达成率 实时*@
+        </div>
+        <div class="item bi-4 row">
+            <div class="col status-quick-item row">
+                <i class="fa fa-solid fa-cubes fa-xl col-4" style="color: white; font-size:45px;"></i>
+                <div class="col-8">
+                    <span class="row" style="font-weight:bold;">库位数</span>
+                    <span class="row" id="total-stock"></span>
+                </div>
+
+            </div>
+        </div>
+        <div class="item bi-5 row">
+            <div class="col status-quick-item row">
+                <i class="fa fa-solid fa-info-circle fa-xl col-4" style="color: white; font-size:45px;"></i>
+                <div class="col-8">
+                    <span class="row" style="font-weight:bold;">有料数</span>
+                    <span class="row" id="not-empty-stock"></span>
+                </div>
+
+            </div>
+        </div>
+        <div class="item bi-6 row">
+            <div class="col status-quick-item row">
+                <i class="fa fa-solid fa-exclamation-circle fa-xl col-4 " style="color: white; font-size:45px;"></i>
+                <div class="col-8">
+                    <span class="row" style="font-weight:bold;">空箱数</span>
+                    <span class="row" id="empty-stock"></span>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="item bi-7 row" id="tool-bar-date">
+            <div class="row">
+                <div class="col input-group">
+                    @*<input type="text" class="form-control bg-dark text-light" id="startdatepicker" lay-filter="startdatepicker" placeholder="yyyy-MM-dd">*@
+                    <label class="input-group-text bg-dark text-light">数据日期</label>
+                    <input type="text" class="form-control bg-dark text-light" id="datepicker" lay-filter="datepicker" placeholder="yyyy-MM-dd">
+                    @*<label class="input-group-text bg-dark text-light">PN</label>
+            <select class="form-select bg-dark text-light" name="modules" lay-verify="required" lay-search="" id="pnFilter" lay-filter="pnFilter">
+            </select>*@
+                    @*<button type="button" class="btn btn-outline-light" id="download-report">Export Reports</button>*@
+                </div>
+            </div>
+           
+        </div>
+
+
+
+        <div class="item bi-8 row" id="trend-unload-1">
+
+            @*1# unload 发料成功率 趋势*@
+        </div>
+
+        <div class="item bi-9 row" id="unload_rate_1">
+            仪表盘2
+        </div>
+        <div class="item bi-10 row" id="storage-pie"></div>
+        <div class="item bi-11 row" id="empty-position">
+
+
+            <table id="table-empty-position"></table>
+        </div>
+
+        <div class="item bi-12 row" id="cache_wall_pie">
+            @*缓存墙饼图*@
+
+        </div>
+        <div class="item bi-13 row" id="trend-unload-2">
+            @*拆料成功率*@
+            2# unload 发料成功率
+        </div>
+
+        <div class="item bi-14 row" id="unload_rate_2">
+            
+        </div>
+
+        <div class="item bi-15 row" id="agv-task-bar">
+
+        </div>
+
+
+        <div class="item bi-16 row" id="table-data">
+            @*AGV任务成功率，五台CTU*@
+            <table id="table-data-ctu"></table>
+        </div>
+
+        <div class="item bi-17 row" id="footer">
+            <div class="col-2" id="watermark">Dashboard Designer: rainy_xu@usiglobal.com</div>
+            <span class="copyright col-8">Copyright © @DateTime.Now.Year SMDC All rights reserved. 智能制造开发中心 版权所有</span>
+            <span class="col-2" id="showTime"></span>
+        </div>
+
+    </div>
+
+    <script type="text/javascript">
+
+        function showFullScreen() {
+
+            /*判断是否全屏*/
+            let isFullscreen = document.fullScreenElement//W3C
+                || document.msFullscreenElement //IE11
+                || document.mozFullScreenElement //火狐
+                || document.webkitFullscreenElement //谷歌
+                || false;
+
+            if (!isFullscreen) {
+                //document.getElementsByTagName('body')[0].style.height = window.innerHeight+'px';
+                let el = document.documentElement;
+                if (el.requestFullscreen) {
+                    el.requestFullscreen();
+                } else if (el.mozRequestFullScreen) {
+                    el.mozRequestFullScreen();
+                } else if (el.webkitRequestFullscreen) {
+                    el.webkitRequestFullscreen();
+                } else if (el.msRequestFullscreen) {
+                    el.msRequestFullscreen();
+                }
+                $("#fullScreen").removeClass("fa-expand").addClass("fa-compress");
+            }
+            else {
+
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.webkitCancelFullScreen) {
+                    document.webkitCancelFullScreen();
+                }
+                $("#fullScreen").removeClass("fa-compress").addClass("fa-expand");
+                //document.getElementsByTagName('body')[0].style.height = window.innerHeight+'px';
+            }
+        }
+
+        var t = null;
+        t = setTimeout(time, 1000);
+        function time() {
+            clearTimeout(t);
+            dt = new Date();
+            var y = dt.getFullYear();
+            var mt = dt.getMonth() + 1;
+            var day = dt.getDate();
+            var h = dt.getHours();
+            var m = dt.getMinutes();
+            var s = dt.getSeconds();
+            document.getElementById("showTime").innerHTML = y + "年" + mt + "月" + day + "日 -" + h + "时" + m + "分" + s + "秒";
+            t = setTimeout(time, 1000);
+        }
+
+
+
+    </script>
+
+</body>
+</html>

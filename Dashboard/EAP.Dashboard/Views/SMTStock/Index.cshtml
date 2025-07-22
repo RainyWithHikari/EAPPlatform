@@ -1,0 +1,699 @@
+﻿@{
+    ViewBag.Title = "SMT线边仓看板";
+}
+<html>
+<head>
+    <link rel="stylesheet" href="~/Content/font-awesome/css/font-awesome.css">
+    <link rel="stylesheet" href="~/Content/font/iconfont.css">
+    <link rel="stylesheet" href="~/Content/bootstrap.min.css" />
+    <script type="text/javascript" src="~/Scripts/jquery-3.4.1.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/echartjs/dist/echarts.js"></script>
+
+    <link rel="shortcut icon" href="~/Scripts/favicon.ico" />
+    <link rel="stylesheet" href="~/Scripts/layui-2.7.6/css/layui.css">
+    <script type="text/javascript" src="~/Scripts/layui-2.7.6/layui.js"></script>
+    <link rel="stylesheet" href="~/Content/Stock/Stockdashboard.css?v=1" />
+    <script type="text/javascript" src="~/Scripts/stock/Stockdashboard.js?v=1"></script>
+
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="item bi-1 row" id="dashboard-title">
+            <div class='col-2 logo'><img src="~/Content/Pictures/logo/Logo_W_SMDi4_400x65_简.png" /> </div>
+            <div class='col-8 row'>
+                <h1 class='col-12' id="title">ZJ SMT Stocker</h1>
+            </div>
+            <div class='col-2 logo'><a id="fullScreen" class="controlbox fa fa-expand" onclick="showFullScreen()"></a></div>
+        </div>
+        <div class="item bi-2 row" id="chart2">
+            @*日期、搜索字段框*@
+            <form class="layui-form layui-form-pane" style="display:flex;align-content:center;justify-content:center;flex-wrap:wrap" action="">
+
+                <div class="layui-form-item">
+                    <div class="layui-input-inline">
+                        <input type="text" autocomplete="off" id="end-date" class="layui-input layui-bg-twinkling" placeholder="结束日期/End Date">
+                    </div>
+                    <div class="layui-inline">
+                        <input type="text" autocomplete="off" id="line" class="layui-input layui-bg-twinkling" placeholder="线体/Line">
+                    </div>
+                    <div class="layui-inline">
+                        <input type="text" autocomplete="off" id="orderno" class="layui-input layui-bg-twinkling" placeholder="工单/Work Order">
+                    </div>
+                    <div class="layui-inline">
+                        <input type="text" autocomplete="off" id="pn" class="layui-input layui-bg-twinkling" placeholder="料号/PN">
+                    </div>
+                    <div class="layui-inline">
+                        <button type="button" class="layui-btn" onclick="ReloadChart()">查询/search</button>
+                    </div>
+                    <div class="layui-inline">
+                        <button type="button" class="layui-btn" onclick="DownloadReport()">下载报表/Download All Data</button>
+                    </div>
+                    <div class="layui-inline">
+                        <button type="button" class="layui-btn" onclick="DownloadItemsData()">下载物料报表/Download Material Data</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="item bi-3 row" id="line-data-downtime">
+            @*down time=alarm/(24h-idle-offline) 折线图，可输入日期段查询*@
+        </div>
+        <div class="item bi-4 row" id="line-data-loadingrate">
+            @*loading rate=run time/24h 折线图，可输入日期段查询*@
+        </div>
+        <div class="item bi-5 row table-container" id="table-data-mtrlstock">
+            @*列表资料，可by日期，by 线体，工单，料号查询*@
+            <table id="mtrl-stock-table"></table>
+        </div>
+        <div class="item bi-6 row" id="bar-data-quantityoftray">
+            @*出入库 柱状图，可输入日期段查询*@
+        </div>
+        <div class="item bi-7 row" id="average-data-ct">
+            @*四种类型CT平均值*@
+            <div class="row info-div">
+                <div class="col">
+                    <span class="row" style="justify-content:center">机器入库平均CT</span>
+                    <span class="row" style="justify-content:center">Avg CT of Automatic Feed</span>
+                    <span class="row" style="justify-content:center" id="average-inct-auto"></span>
+                </div>
+                <div class="col">
+                    <span class="row" style="justify-content:center">人工入库平均CT</span>
+                    <span class="row" style="justify-content:center">Avg CT of Manual Feed</span>
+                    <span class="row" style="justify-content:center" id="average-inct-manual"></span>
+                </div>
+                <div class="col">
+                    <span class="row" style="justify-content:center">人工出库平均CT</span>
+                    <span class="row" style="justify-content:center">Avg CT of Manual Discharge</span>
+                    <span class="row" style="justify-content:center" id="average-outct-manual"></span>
+                </div>
+                <div class="col">
+                    <span class="row" style="justify-content:center">机器出库平均CT</span>
+                    <span class="row" style="justify-content:center">Avg CT of Automatic Discharge</span>
+                    <span class="row" style="justify-content:center" id="average-outct-auto"></span>
+                </div>
+            </div>
+        </div>
+        <div class="item bi-8 row" id="scatter-data-CT">
+            @*CT统计 散点图，可输入日期段查询*@
+        </div>
+        <div class="item bi-9 row" id="bar-data-alarm">
+            @*Alarm code 柱状图，可输入日期段查询*@
+        </div>
+        <div class="item bi-10 row table-container" id="table-data-alarm">
+            @*Alarm资料，可by日期查询*@
+            <table id="alarm-data-table"></table>
+        </div>
+        <div class="item bi-11 row" id="footer">
+            <div class="copyright col-12">Copyright © @DateTime.Now.Year SMDC All rights reserved. 智能制造开发中心 版权所有</div>
+            <div style="display:inline;position: absolute;width:250px;right:0" id="showTime"></div>
+        </div>
+
+
+        <div id="time-selector" class="layui-form" style="display:none;padding-top:10px">
+            <div class="layui-form-item">
+                <div class="layui-inline" style="color:black">
+                    <label class="layui-form-label" style="width:120px">日期范围</label>
+                    <div class="layui-inline" id="date-div">
+                        <div class="layui-input-inline">
+                            <input type="text" autocomplete="off" id="startDate" class="layui-input" placeholder="开始日期">
+                        </div>
+                        <div class="layui-form-mid">-</div>
+                        <div class="layui-input-inline">
+                            <input type="text" autocomplete="off" id="endDate" class="layui-input" placeholder="结束日期">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="timepoint-selector" class="layui-form" style="display:none;padding-top:10px">
+            <div class="layui-form-item">
+                <div class="layui-inline" style="color:black">
+                    <label class="layui-form-label" style="width:80px">日期</label>
+                    <div class="layui-input-inline" style="width:120px">
+                        <input type="text" class="layui-input" id="laydate-date" placeholder="yyyy-MM-dd" />
+                    </div>
+                </div>
+                <div class="layui-inline" style="color:black">
+                    <label class="layui-form-label" style="width:80px">小时</label>
+                    <div class="layui-input-inline" style="width:120px">
+                        <select class="layui-input" id="laydate-hour" lay-search>
+                            <option value="0" selected>0</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="10">10</option>
+                            <option value="11">11</option>
+                            <option value="12">12</option>
+                            <option value="13">13</option>
+                            <option value="14">14</option>
+                            <option value="15">15</option>
+                            <option value="16">16</option>
+                            <option value="17">17</option>
+                            <option value="18">18</option>
+                            <option value="19">19</option>
+                            <option value="20">20</option>
+                            <option value="21">21</option>
+                            <option value="22">22</option>
+                            <option value="23">23</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-inline" style="color:black">
+                    <label class="layui-form-label" style="width:80px">分钟</label>
+                    <div class="layui-input-inline" style="width:120px">
+                        <select class="layui-input" id="laydate-minute">
+                            <option value="0" selected>0</option>
+                            <option value="30">30</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    
+
+    <script type="text/javascript">
+
+        function showFullScreen() {
+
+            /*判断是否全屏*/
+            let isFullscreen = document.fullScreenElement//W3C
+                || document.msFullscreenElement //IE11
+                || document.mozFullScreenElement //火狐
+                || document.webkitFullscreenElement //谷歌
+                || false;
+
+            if (!isFullscreen) {
+                let el = document.documentElement;
+                if (el.requestFullscreen) {
+                    el.requestFullscreen();
+                } else if (el.mozRequestFullScreen) {
+                    el.mozRequestFullScreen();
+                } else if (el.webkitRequestFullscreen) {
+                    el.webkitRequestFullscreen();
+                } else if (el.msRequestFullscreen) {
+                    el.msRequestFullscreen();
+                }
+                $("#fullScreen").removeClass("fa-expand").addClass("fa-compress");
+            }
+            else {
+
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.webkitCancelFullScreen) {
+                    document.webkitCancelFullScreen();
+                }
+                $("#fullScreen").removeClass("fa-compress").addClass("fa-expand");
+            }
+        }
+
+        var t = null;
+        t = setTimeout(time, 1000);
+        function time() {
+            clearTimeout(t);
+            dt = new Date();
+            var y = dt.getFullYear();
+            var mt = dt.getMonth() + 1;
+            var day = dt.getDate();
+            var h = dt.getHours();
+            var m = dt.getMinutes();
+            var s = dt.getSeconds();
+            document.getElementById("showTime").innerHTML = y + "年" + mt + "月" + day + "日 -" + h + "时" + m + "分" + s + "秒";
+            t = setTimeout(time, 1000);
+        }
+
+        layui.use(['table', 'jquery', 'form', 'laydate'], function () {
+            var table = layui.table
+                , form = layui.form
+                , $ = layui.jquery
+                , laydate = layui.laydate;
+
+            var endday = '@DateTime.Today.ToString("yyyy-MM-dd")';
+
+            laydate.render({
+                elem: '#end-date'
+                , value: endday
+                , max: 0
+                //, done: function (value, date, endDate) {
+                //    //更新图表
+                //    ReloadChart();
+                //}
+            });
+
+            laydate.render({
+                elem: '#date-div'
+                , range: ['#startDate', '#endDate']
+            });
+
+            laydate.render({
+                elem: '#laydate-date',
+                value: endday,
+                min: -60,
+            });
+
+            function ChartssetInterval() {
+                //每1分钟刷新一次界面
+                setInterval(function () {
+                    ReloadChart();
+                }, 60000);
+            }
+
+            ReloadChart();
+            ChartssetInterval();
+        });
+
+        function DownloadReport() {
+
+            layui.layer.open({
+                type: 1,
+                title: '选择日期范围',
+                btn: ['下载CT相关', '下载报警相关', '取消'],
+                area: ['40%', '40%'],
+                shade: 0,
+                content: $("#time-selector"),
+                success: function (layero, index) {
+                },
+                yes: function (index, layero) {
+                    var startdate = $("#startDate").val();
+                    var enddate = $("#endDate").val();
+                    //var enddate = $("#end-date").val();
+                    var line = $("#line").val();
+                    var orderno = $("#orderno").val();
+                    var pn = $("#pn").val();
+                    if (startdate == null || startdate == "" || enddate == null || enddate == "") {
+                        layui.layer.msg('<em style="color:black;font-style:normal;font-weight:normal">请选择日期范围！</em>', { icon: 5 });
+                    }
+                    else {
+                        var path = "SMTStock/DownloadReport?startdate=" + startdate + "&enddate=" + enddate + "&line=" + line + "&orderno=" + orderno + "&pn=" + pn;
+                        window.location = path;
+                        layui.layer.close(index);
+                    }
+                },
+                btn2: function (index, layero) {
+                    var startdate = $("#startDate").val();
+                    var enddate = $("#endDate").val();
+                    if (startdate == null || startdate == "" || enddate == null || enddate == "") {
+                        layui.layer.msg('<em style="color:black;font-style:normal;font-weight:normal">请选择日期范围！</em>', { icon: 5 });
+                    }
+                    else {
+                        var path = "SMTStock/DownloadAlarmReport?startdate=" + startdate + "&enddate=" + enddate;
+                        window.location = path;
+                        layui.layer.close(index);
+                    }
+                },
+                btn3: function (index, layero) {
+                    layui.layer.close(index);
+                },
+                end: function (index, layero) {
+                    $("#time-selector").css("display", "none");
+                }
+            });
+
+        }
+
+        function DownloadItemsData() {
+
+            layui.layer.open({
+                type: 1,
+                title: '下载物料报表',
+                btn: ['当前物料报表', '历史物料报表', '取消'],
+                area: ['50%', '40%'],
+                shade: 0,
+                content: $("#timepoint-selector"),
+                success: function (layero, index) {
+                },
+                yes: function (index, layero) {
+                    var line = $("#line").val();
+                    var orderno = $("#orderno").val();
+                    var pn = $("#pn").val();
+                    var path = "SMTStock/DownloadItemsData?line=" + line + "&orderno=" + orderno + "&pn=" + pn;
+                    window.location = path;
+                    layui.layer.close(index);
+                },
+                btn2: function (index, layero) {
+                    var date = $("#laydate-date").val();
+                    var hour = $("#laydate-hour").val();
+                    var minute = $("#laydate-minute").val();
+                    var line = $("#line").val();
+                    var orderno = $("#orderno").val();
+                    var pn = $("#pn").val();
+                    if (date == null || date == "" || hour == null || hour == "" || minute == null || minute == "") {
+                        layui.layer.msg('<em style="color:black;font-style:normal;font-weight:normal">请选择某一时间点！</em>', { icon: 5 });
+                    }
+                    else {
+                        var path = "SMTStock/DownloadHistoryReport?date=" + date + "&hour=" + hour + "&minute=" + minute + "&line=" + line + "&orderno=" + orderno + "&pn=" + pn;
+                        window.location = path;
+                        layui.layer.close(index);
+                    }
+                    return false;
+                },
+                btn3: function (index, layero) {
+                    layui.layer.close(index);
+                },
+                end: function (index, layero) {
+                    $("#timepoint-selector").css("display", "none");
+                }
+            });
+
+            
+        }
+
+        function ReloadChart() {
+            var enddate = $("#end-date").val();
+            var line = $("#line").val();
+            var orderno = $("#orderno").val();
+            var pn = $("#pn").val();
+
+            ReloadDownTimeLineChart(enddate);
+            ReloadQuantityOfTrayBarChart(enddate);
+            ReloadLoadingRateLineChart(enddate);
+            ReloadMtrlStockTableData(line, orderno, pn);
+            ReloadCTChart(enddate, line, orderno, pn);
+            ReloadAlarmChartAndTable(enddate);
+        }
+
+        function ReloadDownTimeLineChart(enddate) {
+            $.ajax({
+                type: 'post',
+                dataType: 'json',
+                data: {
+                    "enddate": enddate,
+                },
+                url: 'SMTStock/GetDownTimeData',
+                success: function (result) {
+                    var chartdata = result.data;
+                    var dateData = getValue(chartdata, 'DATE');
+                    var rateData = getValue(chartdata, 'RATE');
+
+                    GetRateLineChart("line-data-downtime", rateData, dateData, "History Down Rate", "#BC8F8F");
+                },
+                error: function () {
+                }
+            });
+        }
+
+        function ReloadQuantityOfTrayBarChart(enddate) {
+
+            $.ajax({
+                type: 'post',
+                dataType: 'json',
+                data: {
+                    "enddate": enddate,
+                },
+                url: 'SMTStock/GetQuantityOfTrayData',
+                success: function (result) {
+                    var chartdata = result.data;
+                    var dates = getDistinctValue(chartdata, 'DAY');
+
+                    var types = getDistinctValues(chartdata, ['COMMANDNAME']);
+                    var countseries = [];
+                    var legend = [];
+                    types.forEach(function (currentValue, index, array) {
+                        legend.push(currentValue[0]);
+                        var temp = findElements(chartdata, ['COMMANDNAME'], currentValue);
+                        var countsubdata = [];
+                        dates.forEach(function (cv) {
+
+                            var dayoutput = findElements(temp, ['DAY'], [cv]);
+                            if (dayoutput.length == 0) {
+                                countsubdata.push(0);
+                            } else {
+                                countsubdata.push(dayoutput[0].COMMANDQTY);
+                            }
+                        });
+
+                        var countitem = {
+                            name: currentValue[0],
+                            type: 'bar',
+                            barHeight: '100%',
+                            emphasis: {
+                                focus: 'series'
+                            },
+                            data: countsubdata,
+                            label: {
+                                show: true,
+                                /*rotate: 25,*/
+                                position: 'center',
+                                /*align: 'left',*/
+                                fontSize: 14,
+                                color: 'white',
+                                fontWeight: 'bold',
+                                textStyle: {
+                                    textShadowColor: 'rgba(0, 0, 0, 0.5)', // 阴影颜色
+                                    textShadowBlur: 5 // 阴影模糊大小
+                                },
+                                formatter: function (params) {
+                                    var value = parseFloat(params.value).toFixed(0)
+                                    if (value > 0) {
+                                        return parseFloat(params.value).toFixed(0);
+                                    } else {
+                                        return '';
+                                    }
+                                }
+                            }
+                        };
+                        countseries.push(countitem);
+
+                    })
+
+                    GetSeriesBarChart("bar-data-quantityoftray", legend, countseries, dates, "Tray of Feed and Discharge");
+                },
+                error: function () {
+                }
+            });
+
+        }
+
+        function ReloadLoadingRateLineChart(enddate) {
+            $.ajax({
+                type: 'post',
+                dataType: 'json',
+                data: {
+                    "enddate": enddate,
+                },
+                url: 'SMTStock/LoadingRateData',
+                success: function (result) {
+                    var chartdata = result.data;
+                    var dateData = getValue(chartdata, 'DATE');
+                    var rateData = getValue(chartdata, 'RATE');
+
+                    GetRateLineChart("line-data-loadingrate", rateData, dateData, "History Loading Rate", "#339933");
+                },
+                error: function () {
+                }
+            });
+        }
+
+        function ReloadMtrlStockTableData(line, orderno, pn) {
+            const containerHeight = document.getElementById('table-data-mtrlstock').clientHeight;
+            $.ajax({
+                type: 'post',
+                dataType: 'json',
+                data: {
+                    "line": line,
+                    "orderno": orderno,
+                    "pn": pn
+                },
+                url: 'SMTStock/MtrlStockTableData',
+                success: function (result) {
+                    var tabledata = result.data;
+                    var length = 0;
+                    if (tabledata != null)
+                        length = tabledata.length;
+
+                    layui.table.render({
+                        elem: '#mtrl-stock-table'
+                        , height: containerHeight
+                        , data: tabledata
+                        , limit: length
+                        , totalRow: true
+                        , size: 'sm' //小尺寸的表格
+                        , page: false
+                        , cols: [[
+                            { field: 'Line', title: '线体/Line', rowspan: 2, align: "center", minWidth: 85, totalRow: '合计/Total：' }
+                            , { field: 'OrderNo', title: '工单号/WorkOrderNo', rowspan: 2, align: "center", minWidth: 135 }
+                            , { field: 'PN', title: '料号/PN', rowspan: 2, align: "center", minWidth: 100 }
+                            , { title: '工单/WorkOrder', colspan: 2, align: "center" }
+                            , { title: '已扫PVS/ScannedInPVS', colspan: 2, align: "center" }
+                            , { title: '已接收/Received', colspan: 2, align: "center" }
+                            , { title: '运送中/Conveying', colspan: 2, align: "center" }
+                            , { title: '方仓库存/InWarehouse', colspan: 2, align: "center" }
+                            , { title: '线边仓库存/InSMTStocker', colspan: 2, align: "center" }
+                            , { title: '叫料占用/Occupied', colspan: 2, align: "center" }
+                            , { title: '机器出库/AutomaticDischarge', colspan: 2, align: "center" }
+                            , { title: '人工出库/ManualDischarge', colspan: 2, align: "center" }
+                            , { title: '机器入库/AutomaticFeed', colspan: 2, align: "center" }
+                            , { title: '人工入库/ManualFeed', colspan: 2, align: "center" }
+                        ],
+                            [
+                                { field: 'QuantityInOrder', title: '总数量/Quantity', align: "center", minWidth: 105, totalRow: '{{= parseInt(d.TOTAL_NUMS) }}' }
+                                , { field: 'TrayInOrder', title: '总盘数/Tray', align: "center", minWidth: 85, totalRow: '{{= parseInt(d.TOTAL_NUMS) }}' }
+                                , { field: 'UsedQuantity', title: '数量/Quantity', align: "center", minWidth: 105, totalRow: '{{= parseInt(d.TOTAL_NUMS) }}' }
+                                , { field: 'UsedTray', title: '盘数/Tray', align: "center", minWidth: 85, totalRow: '{{= parseInt(d.TOTAL_NUMS) }}' }
+                                , { field: 'ReceivedQuantity', title: '数量/Quantity', align: "center", minWidth: 105, totalRow: '{{= parseInt(d.TOTAL_NUMS) }}' }
+                                , { field: 'ReceivedTray', title: '盘数/Tray', align: "center", minWidth: 85, totalRow: '{{= parseInt(d.TOTAL_NUMS) }}' }
+                                , { field: 'DeliveringQuantity', title: '数量/Quantity', align: "center", minWidth: 105, totalRow: '{{= parseInt(d.TOTAL_NUMS) }}' }
+                                , { field: 'DeliveringTray', title: '盘数/Tray', align: "center", minWidth: 85, totalRow: '{{= parseInt(d.TOTAL_NUMS) }}' }
+                                , { field: 'StockQuantity', title: '数量/Quantity', align: "center", minWidth: 105, totalRow: '{{= parseInt(d.TOTAL_NUMS) }}' }
+                                , { field: 'StockTray', title: '盘数/Tray', align: "center", minWidth: 85, totalRow: '{{= parseInt(d.TOTAL_NUMS) }}' }
+                                , { field: 'SMTStockQuantity', title: '数量/Quantity', align: "center", minWidth: 105, totalRow: '{{= parseInt(d.TOTAL_NUMS) }}' }
+                                , { field: 'SMTStockTray', title: '盘数/Tray', align: "center", minWidth: 85, totalRow: '{{= parseInt(d.TOTAL_NUMS) }}' }
+                                , { field: 'OccupiedQuantity', title: '数量/Quantity', align: "center", minWidth: 105, totalRow: '{{= parseInt(d.TOTAL_NUMS) }}' }
+                                , { field: 'OccupiedTray', title: '盘数/Tray', align: "center", minWidth: 85, totalRow: '{{= parseInt(d.TOTAL_NUMS) }}' }
+                                , { field: 'AutoOutQuantity', title: '数量/Quantity', align: "center", minWidth: 105, totalRow: '{{= parseInt(d.TOTAL_NUMS) }}' }
+                                , { field: 'AutoOutTray', title: '盘数/Tray', align: "center", minWidth: 85, totalRow: '{{= parseInt(d.TOTAL_NUMS) }}' }
+                                , { field: 'ManualOutQuantity', title: '数量/Quantity', align: "center", minWidth: 105, totalRow: '{{= parseInt(d.TOTAL_NUMS) }}' }
+                                , { field: 'ManualOutTray', title: '盘数/Tray', align: "center", minWidth: 85, totalRow: '{{= parseInt(d.TOTAL_NUMS) }}' }
+                                , { field: 'AutoInQuantity', title: '数量/Quantity', align: "center", minWidth: 105, totalRow: '{{= parseInt(d.TOTAL_NUMS) }}' }
+                                , { field: 'AutoInTray', title: '盘数/Tray', align: "center", minWidth: 85, totalRow: '{{= parseInt(d.TOTAL_NUMS) }}' }
+                                , { field: 'ManualInQuantity', title: '数量/Quantity', align: "center", minWidth: 105, totalRow: '{{= parseInt(d.TOTAL_NUMS) }}' }
+                                , { field: 'ManualInTray', title: '盘数/Tray', align: "center", minWidth: 85, totalRow: '{{= parseInt(d.TOTAL_NUMS) }}' }
+                            ]]
+                        , done: function (res, curr, count) {
+
+                            
+                        }
+                    });
+
+                },
+                error: function () {
+                }
+            });
+        }
+
+        function ReloadCTChart(enddate, line, orderno, pn) {//散点图
+            $.ajax({
+                type: 'post',
+                dataType: 'json',
+                data: {
+                    "enddate": enddate,
+                    "line": line,
+                    "orderno": orderno,
+                    "pn": pn
+                },
+                url: 'SMTStock/GetCTData',
+                success: function (result) {
+                    var chartdata = result.data;
+
+                    var types = getDistinctValues(chartdata, ['COMMANDNAME']);
+                    var series = [];
+                    var legend = [];
+                    var average_map = new Map();
+                    types.forEach(function (currentValue, index, array) {
+                        legend.push(currentValue[0]);
+                        var temp = findElements(chartdata, ['COMMANDNAME'], currentValue);
+
+                        var ctdata = [];
+                        var prevTotalCT = 0;
+
+                        for (var i = 0; i < temp.length; i++) {
+                            ctdata.push({
+                                value: [temp[i]["DATESTR"], temp[i]["CT"], temp[i]["COMMANDNAME"], temp[i]["REELID"], temp[i]["PN"]]
+                            });
+                            prevTotalCT += temp[i]["CT"];
+                        }
+
+                        var item = {
+                            name: currentValue[0],
+                            type: 'scatter',
+                            data: ctdata,
+                            emphasis: {
+                                focus: 'series'
+                            },
+                        }
+
+                        series.push(item);
+
+                        if (ctdata.length != 0) {
+                            average_map.set(currentValue[0], (prevTotalCT / ctdata.length).toFixed(2));
+                        }
+                        else {
+                            average_map.set(currentValue[0], 0);
+                        }
+                    });
+
+                    GetCTScatterChart("scatter-data-CT", legend, series, "CT of Feed and Discharge");
+                    document.getElementById("average-inct-auto").innerHTML = average_map.get("机器入库");
+                    document.getElementById("average-inct-manual").innerHTML = average_map.get("人工入库");
+                    document.getElementById("average-outct-manual").innerHTML = average_map.get("人工出库");
+                    document.getElementById("average-outct-auto").innerHTML = average_map.get("机器出库");
+                },
+                error: function () {
+                }
+            });
+        }
+
+        function ReloadAlarmChartAndTable(enddate) {
+            $.ajax({
+                type: 'post',
+                dataType: 'json',
+                data: {
+                    "enddate": enddate,
+                },
+                url: 'SMTStock/GetAlarmData',
+                success: function (result) {
+                    var chartdata = result.data;
+
+                    var types = getDistinctValues(chartdata, ['ALARMCODE']);
+                    var data = [];
+                    var legend = [];
+                    types.forEach(function (currentValue, index, array) {
+                        legend.push(currentValue[0]);
+                        var temp = findElements(chartdata, ['ALARMCODE'], currentValue);
+                        var prevTotalCount = 0;
+
+                        for (var i = 0; i < temp.length; i++) {
+                            prevTotalCount++;
+                        }
+
+                        data.push(prevTotalCount);
+                    });
+
+                    data.sort((a, b) => b - a);//排序
+                    GetSingleBarChart("bar-data-alarm", chartdata, legend, data, "Alarm Codes");
+
+                    const containerHeight = document.getElementById('table-data-alarm').clientHeight;
+                    var length = 0;
+                    if (chartdata != null)
+                        length = chartdata.length;
+
+                    layui.table.render({
+                        elem: '#alarm-data-table'
+                        , height: containerHeight
+                        , data: chartdata
+                        , limit: length
+                        , size: 'sm' //小尺寸的表格
+                        , page: false
+                        , cols: [[
+                            { field: 'DATESTR', title: 'Alarm Time', width: 150, align: "center" }
+                            , { field: 'ALARMCODE', title: 'Code', width: 60, align: "center" }
+                            , { field: 'ALARMTEXT', title: 'Text', align: "center" }
+                        ]]
+                        , done: function (res, curr, count) {
+                        }
+                    });
+
+                },
+                error: function () {
+                }
+            });
+
+
+        }
+
+    </script>
+
+</body>
+</html>

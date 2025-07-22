@@ -1,0 +1,255 @@
+﻿@charset "utf-8";
+
+* {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box
+}
+
+
+
+html, body {
+    background: #000d4a url('/images/dashboard/bg.jpg') center top;
+    background-size: cover;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    font-family: 'Cambria';
+    font-weight: bold;
+    color: rgba(255,255,255,.7);
+    cursor: move;
+    overflow-x: hidden;
+    overflow-y: hidden;
+}
+
+.header {
+    top: 0;
+    padding: 0px;
+    margin: 0px;
+    width: 100%;
+    height: 1rem;
+    background: url(/images/dashboard/head_bg.png) no-repeat center center;
+    background-size: 100% 100%;
+    position: relative;
+}
+
+    .header .logo {
+        background-repeat: no-repeat;
+        width: 200px;
+        height: 33px;
+        float: left;
+        margin-top: 0.1rem;
+        margin-left: 0.3rem;
+        /*        display: flex;
+        align-items: center;
+        justify-content: center;*/
+    }
+
+    .header .title {
+        width: auto;
+        margin-left: 2rem;
+        margin-right: 2rem;
+        color: #fff;
+        text-align: center;
+        line-height: 1rem;
+        font-size: 0.48rem;
+    }
+
+    .header .controlbox {
+        position: absolute;
+        font-size: 0.3rem;
+        right: 0.3rem;
+        top: 0.2rem;
+        cursor: default;
+        color: rgba(64, 95, 168,0.6);
+    }
+
+.detail-chart {
+    height: 7.6rem;
+    padding: 0;
+    margin: 0;
+}
+
+    .detail-chart ul {
+   /*     padding: 0;
+        margin: 0;*/
+    }
+
+        .detail-chart ul li {
+            float: left;
+            list-style-type: none;
+        }
+
+            .detail-chart ul li .left {
+                float: left;
+                font-size: 0.4rem;
+            }
+
+            .detail-chart ul li .right {
+                float: right;
+                font-size: 0.4rem;
+            }
+
+.box {
+    height: 7rem;
+    border: 1px solid rgba(25,186,139,.17);
+    background: rgba(255,255,255,.04) url('/images/dashboard/line.png');
+    background-size: 100% auto;
+    margin: 0.0rem 0.1rem 0.1rem 0.1rem;
+}
+
+.box1 {
+    border: 1px solid rgba(25,186,139,.17);
+    background: rgba(255,255,255,.04) url('/images/dashboard/line.png');
+    background-size: 100% auto;
+    height: 3.1rem;
+    margin-left: 0.1rem;
+    margin-right: 0.1rem;
+}
+
+.box3 {
+    border: 1px solid rgba(25,186,139,.17);
+    background: rgba(255,255,255,.04) url('/images/dashboard/line.png');
+    background-size: 100% auto;
+    height: 2rem;
+    margin-right: 0.1rem;
+}
+
+    .box3 h2 {
+        line-height: 0.2rem;
+        font-size: 0.2rem;
+        padding: 0;
+        margin: 0;
+        text-align: center;
+    }
+
+    .box3 span {
+        font-size: 0.2rem;
+        padding: 0;
+        margin: 0;
+        text-align: center;
+        font-family: 'DS-DIGIT';
+        color: yellowgreen;
+    }
+
+.scroll-message {
+    float: none;
+    height: 0.3rem;
+    font-size: 0.3rem;
+    position: relative;
+    text-align: center;
+    width: auto;
+    -webkit-animation: scroll-move 10s linear infinite;
+    animation: scroll-move 10s linear infinite;
+    text-shadow: 0.03rem 0.03rem 0.03rem #724e58;
+    bottom: 0.35rem;
+}
+
+@-webkit-keyframes scroll-move {
+    from {
+        left: 15rem;
+    }
+
+    to {
+        left: -15rem;
+    }
+}
+
+@keyframes scroll-move {
+    from {
+        left: 15rem;
+    }
+
+    to {
+        left: -15rem;
+    }
+}
+
+.footer {
+    width: 100%;
+    height: 1rem;
+    position: absolute;
+    text-align: center;
+    bottom: 0rem;
+}
+
+    .footer .copyright {
+        width: 100%;
+        line-height: 1rem;
+        font-size: 0.15rem;
+    }
+
+
+.layui-row-amhs {
+    margin: 0% 3% 0% 3%;
+}
+
+.agv-card {
+    width: 18%;
+    height: 32%;
+    opacity: 1;
+    margin: 0.05rem 0.05rem 0.05rem 0.05rem;
+    font-size: 12px;
+}
+
+.box-status {
+    border: 1px solid rgba(25,186,139,.17);
+    background: rgba(255,255,255,.04) url('/images/dashboard/line.png');
+    background-size: 100% auto;
+    height: 2rem;
+    margin-left: 0.1rem;
+    margin-right: 0.1rem;
+}
+
+.progress {
+    margin-top:0.1rem;
+    padding: 4px;
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 6px;
+    -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25), 0 1px rgba(255, 255, 255, 0.08);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25), 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.progress-bar {
+    position: relative;
+    height: 0.2rem;
+    border-radius: 4px;
+    -webkit-transition: 0.4s linear;
+    -moz-transition: 0.4s linear;
+    -o-transition: 0.4s linear;
+    transition: 0.4s linear;
+    -webkit-transition-property: width, background-color;
+    -moz-transition-property: width, background-color;
+    -o-transition-property: width, background-color;
+    transition-property: width, background-color;
+    -webkit-box-shadow: 0 0 1px 1px rgba(0, 0, 0, 0.25), inset 0 1px rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 1px 1px rgba(0, 0, 0, 0.25), inset 0 1px rgba(255, 255, 255, 0.1);
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    font-size: 0.2rem;
+}
+
+    .progress-bar:before, .progress-bar:after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+    }
+
+    .progress-bar:before {
+        bottom: 0;
+        background: url("/images/dashboard/stripes.png") 0 0 repeat;
+        border-radius: 4px 4px 0 0;
+    }
+
+    .progress-bar:after {
+        z-index: 2;
+        bottom: 45%;
+        border-radius: 4px;
+        background-image: -webkit-linear-gradient(top, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.05));
+        background-image: -moz-linear-gradient(top, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.05));
+        background-image: -o-linear-gradient(top, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.05));
+        background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.05));
+    }

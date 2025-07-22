@@ -1,0 +1,45 @@
+﻿
+@model EAPPlatform.ViewModel._Admin.FrameworkUserVMs.FrameworkUserVM
+@using WalkingTec.Mvvm.Core.Extensions;
+@inject IStringLocalizer<Program> Localizer;
+
+<wt:container>
+  <wt:form vm="@Model"  >
+    <wt:row  items-per-row="ItemsPerRowEnum.Two">
+      <wt:display field="Entity.Email"/>
+      <wt:display field="Entity.Gender"/>
+    </wt:row>
+    <wt:row  items-per-row="ItemsPerRowEnum.Two">
+      <wt:display field="Entity.CellPhone"/>
+      <wt:display field="Entity.HomePhone"/>
+    </wt:row>
+    <wt:row  items-per-row="ItemsPerRowEnum.Two">
+      <wt:display field="Entity.Address"/>
+      <wt:display field="Entity.ZipCode"/>
+    </wt:row>
+    <wt:row  items-per-row="ItemsPerRowEnum.Two">
+      <wt:display field="Entity.ITCode"/>
+      <wt:display field="Entity.Name"/>
+    </wt:row>
+    <wt:row  items-per-row="ItemsPerRowEnum.Two">
+      <wt:display field="Entity.IsValid"/>
+      <wt:upload field="Entity.PhotoId" disabled="true" style="width:300px;" upload-type="ImageFile" thumb-width="128"/>
+    </wt:row>
+    <wt:row  items-per-row="ItemsPerRowEnum.Two">
+      <wt:display field="Entity.CreateTime"/>
+      <wt:display field="Entity.UpdateTime"/>
+    </wt:row>
+    <wt:row  items-per-row="ItemsPerRowEnum.Two">
+      <wt:display field="Entity.CreateBy"/>
+      <wt:display field="Entity.UpdateBy"/>
+    </wt:row>
+
+    <wt:container align="AlignEnum.Right">
+      <wt:closebutton  text="@Localizer["Sys.Close"]"/>
+    </wt:container>
+
+  </wt:form>
+
+</wt:container>
+
+

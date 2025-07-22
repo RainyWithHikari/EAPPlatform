@@ -1,0 +1,267 @@
+﻿@{
+    ViewBag.Title = "拆料头看板";
+}
+<html>
+<head>
+
+
+    <link rel="stylesheet" href="~/Content/DMaterialdashboard.css?v=1.0" />
+    <link rel="stylesheet" href="~/Content/font-awesome/css/font-awesome.css">
+    <link rel="stylesheet" href="~/Content/font/iconfont.css">
+    <link rel="stylesheet" href="~/Content/bootstrap.min.css" />
+
+    <script src="~/Scripts/layui/layui.table.formdate.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery-3.4.1.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/echartjs/dist/echarts.js"></script>
+
+    @*<link rel="stylesheet" href="~/Scripts/layui-2.7.6/css/layui.css">
+    <script type="text/javascript" src="~/Scripts/layui-2.7.6/layui.js"></script>*@
+
+    <link rel="shortcut icon" href="~/Scripts/favicon.ico" />
+    <link rel="stylesheet" href="~/Scripts/layui/css/layui.css" media="all">
+    <script type="text/javascript" src="~/Scripts/layui/layui.js"></script>
+    <script type="module" charset="utf-8" src="~/Scripts/DMaterialdashboard.js?v=1.1"></script>
+</head>
+<body>
+
+    @*<div class="spinner-border text-light" role="status" id="loading">
+
+    </div>*@
+
+
+    <div class="dashboard-container">
+        <div class="item bi-1 row" id="dashboard-title">
+            <div class='col-2 logo'><img src="~/Content/Pictures/logo/Logo_W_SMDi4_400x65_简.png" /> </div>
+            <div class='col-8 row'>
+                <h1 class='col-12' id="title">ZJ 智能SMT- 拆料头</h1>
+
+            </div>
+
+            <div class="col-2 row">
+
+                <div class="col-12" style="margin-top:10px;">
+                    @*<h6 class='row' id="LN" ></h6>*@
+                    @*<h6 class='row' id="PN"></h6>*@
+
+                    <form class="layui-form-item row" action="">
+
+                        <div class="input-group">
+
+                            <label class="input-group-text bg-dark text-light">EQP</label>
+                            <select class="form-select bg-dark text-light" name="modules" lay-verify="required" lay-search="" id="eqpFilter" lay-filter="eqpFilter">
+                            </select>
+
+                            <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="true">
+                                Tools
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-dark">
+                                <li>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckChecked">@*checked*@
+                                        <label class="form-check-label" for="flexSwitchCheckChecked">轮播开关</label>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="input-group border-0">
+                                        <label class="input-group-text bg-dark text-light border-dark">轮播频率</label>
+                                        <input type="text" class="form-control bg-dark text-light border-dark" id="interval" placeholder="30" aria-label="30s" aria-describedby="basic-addon1" style="width:60px;">
+                                        <label class="input-group-text bg-dark text-light border-dark">s</label>
+                                    </div>
+                                </li>
+
+                                <li><a class="dropdown-item" onclick="showFullScreen()">Full Screen</a></li>
+
+                            </ul>
+                        </div>
+                        @*<div class="input-group input-group-sm mb-sm-1">
+                                    <label class="input-group-text ">Line</label>
+
+                                    <select class="form-select " name="modules" lay-verify="required" lay-search="" id="lineFilter" lay-filter="lineFilter">
+                                    </select>
+                            </div>*@
+
+
+
+
+                    </form>
+
+                    @*<span class="row" id="PN"></span>*@
+                </div>
+                <!--<div class="col-3">-->
+                @*<a class="controlbox fa fa-expand" id="fullScreen" onclick="showFullScreen()"></a>*@
+
+                <!--</div>-->
+                @*<span class="col" id="fullScreen" class="controlbox fa fa-expand" onclick="showFullScreen()"></span>*@
+
+
+
+
+
+            </div>
+        </div>
+        <div class="item bi-2 row" id="bar-data-output">
+            @*x号机：历史七天拆料明细（柱状图）*@
+        </div>
+        <div class="item bi-3 row" id="chart2">
+            @*x号机：机种，料号，工单*@
+            <div class="row eqpInfo">
+                <div class="col-4" id="EQID"></div>
+                <div class="col-4 row">
+                    <i class="fa fa-solid fa-check-circle fa-xl col-4" id="status-icon" style="color: green; font-size:45px;"></i> @*fa-exclamation-triangle*@
+                    <div class="col-8">
+                        <span class="row" style="font-weight:bold;">当前设备状态</span>
+                        <span class="row" id="status"></span>
+                    </div>
+
+                </div>
+                <div class="col status-quick-item row">
+                    <i class="fa fa-solid fa-cubes fa-xl col-4" style="color: white; font-size:45px;"></i>
+                    <div class="col-8">
+                        <span class="row" style="font-weight:bold;">拆料总数</span>
+                        <span class="row" id="outputs"></span>
+                    </div>
+
+                </div>
+            </div>
+            <div class="row eqpInfo">
+
+                <div class="col status-quick-item row">
+                    <i class="fa fa-solid fa-cubes fa-xl col-4" style="color: white; font-size:45px;"></i>
+                    <div class="col-8">
+                        <span class="row" style="font-weight:bold;">拆料成功率</span>
+                        <span class="row" id="success-rate"></span>
+                    </div>
+
+                </div>
+                <div class="col status-quick-item row">
+                    <i class="fa fa-solid fa-info-circle fa-xl col-4" style="color: white; font-size:45px;"></i>
+                    <div class="col-8">
+                        <span class="row" style="font-weight:bold;">Loading Rate</span>
+                        <span class="row" id="loading-rate"></span>
+                    </div>
+
+                </div>
+                <div class="col status-quick-item row">
+                    <i class="fa fa-solid fa-exclamation-circle fa-xl col-4 " style="color: white; font-size:45px;"></i>
+                    <div class="col-8">
+                        <span class="row" style="font-weight:bold;">Down Rate</span>
+                        <span class="row" id="down-rate"></span>
+                    </div>
+
+                </div>
+            </div>
+
+
+        </div>
+        <div class="item bi-4 row " id="tool-bar-date">
+            <div class="col input-group">
+                <input type="text" class="form-control bg-dark text-light" id="startdatepicker" lay-filter="startdatepicker" placeholder="yyyy-MM-dd">
+                <label class="input-group-text bg-dark text-light">~</label>
+                <input type="text" class="form-control bg-dark text-light" id="datepicker" lay-filter="datepicker" placeholder="yyyy-MM-dd">
+                <label class="input-group-text bg-dark text-light">PN</label>
+                <select class="form-select bg-dark text-light" name="modules" lay-verify="required" lay-search="" id="pnFilter" lay-filter="pnFilter">
+                </select>
+                <button type="button" class="btn btn-outline-light" id="download-report">Export Reports</button>
+            </div>
+
+
+        </div>
+        <div class="item bi-5 row" id="trend-data-runtime">
+            @*x号机：Run Time rate 折线图*@
+
+        </div>
+        <div class="item bi-12 row" id="trend-success-rate">
+            @*拆料成功率*@
+
+        </div>
+
+        <div class="item bi-6 row" id="scatter-data-ct">
+
+            @*x号机：散点图（CT）*@
+
+        </div>
+        <div class="item bi-7 row" id="trend-data-downtime">
+            @*x号机：历史七天 Down Time rate 折线图*@
+        </div>
+        <div class="item bi-8 row" id="data-alarms">
+            @*x号机：实时alarm list*@
+            <table id="table-data-alarms"></table>
+
+        </div>
+        <div class="item bi-9 row" id="bar-data-alarmcode">
+            @*x号机：最新一天 alarm code 柱状图*@
+        </div>
+        <div class="item bi-10 row" id="bar-data-totalalarm">
+            @*x号机：历史七天 alarm 次数柱状图*@
+        </div>
+        <div class="item bi-11 row" id="footer">
+            <div class="col-2" id="watermark">Dashboard Designer: rainy_xu@usiglobal.com</div>
+            <span class="copyright col-8">Copyright © @DateTime.Now.Year SMDC All rights reserved. 智能制造开发中心 版权所有</span>
+            <span class="col-2" id="showTime"></span>
+        </div>
+
+    </div>
+
+    <script type="text/javascript">
+
+        function showFullScreen() {
+
+            /*判断是否全屏*/
+            let isFullscreen = document.fullScreenElement//W3C
+                || document.msFullscreenElement //IE11
+                || document.mozFullScreenElement //火狐
+                || document.webkitFullscreenElement //谷歌
+                || false;
+
+            if (!isFullscreen) {
+                //document.getElementsByTagName('body')[0].style.height = window.innerHeight+'px';
+                let el = document.documentElement;
+                if (el.requestFullscreen) {
+                    el.requestFullscreen();
+                } else if (el.mozRequestFullScreen) {
+                    el.mozRequestFullScreen();
+                } else if (el.webkitRequestFullscreen) {
+                    el.webkitRequestFullscreen();
+                } else if (el.msRequestFullscreen) {
+                    el.msRequestFullscreen();
+                }
+                $("#fullScreen").removeClass("fa-expand").addClass("fa-compress");
+            }
+            else {
+
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.webkitCancelFullScreen) {
+                    document.webkitCancelFullScreen();
+                }
+                $("#fullScreen").removeClass("fa-compress").addClass("fa-expand");
+                //document.getElementsByTagName('body')[0].style.height = window.innerHeight+'px';
+            }
+        }
+
+        var t = null;
+        t = setTimeout(time, 1000);
+        function time() {
+            clearTimeout(t);
+            dt = new Date();
+            var y = dt.getFullYear();
+            var mt = dt.getMonth() + 1;
+            var day = dt.getDate();
+            var h = dt.getHours();
+            var m = dt.getMinutes();
+            var s = dt.getSeconds();
+            document.getElementById("showTime").innerHTML = y + "年" + mt + "月" + day + "日 -" + h + "时" + m + "分" + s + "秒";
+            t = setTimeout(time, 1000);
+        }
+
+
+
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,318 @@
+﻿@{
+    ViewBag.Title = "Home";
+    string RIDMViewUrl = Url.Action("Index", "RIDM");
+    string WarehouseViewUrl = Url.Action("Index", "WarehouseDashboard");
+
+    string equipmentViewUrl = Url.Action("Index", "EquipmentDashboard");
+    string ACCBOXViewUrl = Url.Action("Index", "ACCBoxDashboard");
+    string DMaterialViewUrl = Url.Action("Index", "DMaterialDashboard");
+    string SMTStockViewUrl = Url.Action("Index", "SMTStock");
+
+    string ETechViewUrl = Url.Action("Index", "ETechDashboard");
+    string otmsViewUrl = Url.Action("Index", "OTMS");
+
+    string APLPackingViewUrl = Url.Action("Index", "APLPacking");
+
+    var user = (EAP.Dashboard.Models.FrameworkUsers)Session["user_account"];
+
+    string name = "未登录";
+    if (user != null)
+    {
+        name = user.Name;
+    }
+}
+<head>
+    @*<script type="text/javascript" src="~/Scripts/jquery.js"></script>*@
+
+
+
+    <link rel="stylesheet" href="~/Scripts/bootstrap-5.1.3-dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/Scripts/layui/css/layui.css" media="all">
+
+    <script type="text/javascript" src="~/Scripts/bootstrap-5.1.3-dist/js/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/layui/layui.js"></script>
+
+
+    <script src="~/Scripts/jquery-3.4.1.min.js"></script>
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+
+
+    
+    <style>
+        .body-content {
+            padding: 2%;
+        }
+        .col{
+            padding-bottom:2%;
+        }
+    </style>
+
+</head>
+<main>
+    <div class="layui-layout layui-layout-admin">
+        <div class="layui-header">
+            <div class="layui-logo">@ViewBag.site EAP Dashboard</div>
+
+
+            <ul class="layui-nav layui-layout-right" lay-filter="nav">
+                <li class="layui-nav-item">
+                    <a href="javascript:;">
+                        <!-- 头像 -->
+                        @*<img src="http://t.cn/RCzsdCq" class="layui-nav-img">*@
+                        <!-- 当前Session用户名 -->
+                        @name
+                    </a>
+                    <!--<dl class="layui-nav-child">-->
+                    @*<dd><a href="">基本资料</a></dd>*@
+                    @*<dd><a href="">@name</a></dd>*@
+                    <!--<dd><a href="\Account\ChangePassword">修改密码</a></dd>
+        </dl>-->
+                </li>
+                @*<li  class="layui-nav-item">
+                    <select id="languageSwitcher">
+                        <option value="en">English</option>
+                        <option value="zh">中文</option>
+                    </select>
+                </li>*@
+                <li class="layui-nav-item"><a href="javascript:LogOut();">Log out</a></li>
+            </ul>
+        </div>
+
+    </div>
+
+    <div class="container-fluid ">
+
+        <main class="main-content">
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-warning alert-dismissible fade show" role="alert" >
+                    <strong>Sorry!</strong> @TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                @*<div style="color: red;">
+                    @TempData["ErrorMessage"]
+                </div>*@
+            }
+
+        <div class="body-content">
+            <div class="row row-cols-3">
+
+                <div class="col">
+                    <div class="card bg-light">
+                        @*<h4 class="card-header">设备总看板</h4>*@
+                        <h4 class="card-header">设备总看板</h4>
+                        <div class="card-body">
+
+                            <p class="card-text">设备实时状态、Runrate、MTBA、Alarm，历史状态、报警追溯等。</p>
+
+                        </div>
+                        <div class="card-footer bg-transparent border-light">
+                            <a href="@equipmentViewUrl" @*class="btn btn-primary"*@ style="color:dodgerblue;" target="_blank">点击跳转</a>
+                        </div>
+                    </div>
+                </div>
+
+                @{ if (@ViewBag.site == "ZJ")
+                    {
+                        <div class="col">
+                            <div class="card bg-light">
+                                <h4 class="card-header">合料机看板</h4>
+                                <div class="card-body">
+
+                                    <p class="card-text">ZJ 大库合料机合盘明细、OEE报表导出等</p>
+
+
+                                </div>
+                                <div class="card-footer bg-transparent border-light">
+                                    <a href="@RIDMViewUrl" style="color:dodgerblue;" target="_blank">点击跳转</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card bg-light">
+                                <h4 class="card-header">ZJ 智能仓储看板</h4>
+                                <div class="card-body">
+
+                                    <p class="card-text">ZJ 智能仓储总看板</p>
+
+
+                                </div>
+                                <div class="card-footer bg-transparent border-light">
+                                    <a href="@WarehouseViewUrl" style="color:dodgerblue;" target="_blank">点击跳转</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card bg-light">
+                                @*<h4 class="card-header">ACCBOX-数字孪生</h4>*@
+                                <h4 class="card-header">ACCBOX-数字孪生</h4>
+                                <div class="card-body">
+
+                                    <p class="card-text">ACCBOX 数字孪生大屏</p>
+
+
+                                </div>
+                                <div class="card-footer bg-transparent border-light">
+                                    <a href="@ACCBOXViewUrl" style="color:dodgerblue;" target="_blank">点击跳转</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card bg-light">
+                                @*<h4 class="card-header">ACCBOX-数字孪生</h4>*@
+                                <h4 class="card-header">拆料头设备看板</h4>
+                                <div class="card-body">
+
+                                    <p class="card-text">拆料头设备看板</p>
+
+
+                                </div>
+                                <div class="card-footer bg-transparent border-light">
+                                    <a href="@DMaterialViewUrl" style="color:dodgerblue;" target="_blank">点击跳转</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col">
+                            <div class="card bg-light">
+                                <h4 class="card-header">SMT线边仓</h4>
+                                <div class="card-body">
+
+                                    <p class="card-text">线边仓工单状况、出料盘数、CT统计、设备利用率</p>
+
+                                </div>
+                                <div class="card-footer bg-transparent border-light">
+                                    <a href="@SMTStockViewUrl" style="color:dodgerblue;" target="_blank">点击跳转</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col">
+                            <div class="card bg-light">
+                                @*<h4 class="card-header">ACCBOX-数字孪生</h4>*@
+                                <h4 class="card-header">E·TECH 看板</h4>
+                                <div class="card-body">
+
+                                    <p class="card-text">Auto Assembly Line Dashboard - E·TECH</p>
+
+
+                                </div>
+                                <div class="card-footer bg-transparent border-light">
+                                    <a href="@ETechViewUrl" style="color:dodgerblue;" target="_blank">点击跳转</a>
+                                </div>
+                            </div>
+                        </div>
+
+                    }
+                    if (@ViewBag.site == "GDL" || @ViewBag.site == "HPH")
+                    {
+                        <div class="col">
+                            <div class="card bg-light">
+                                @*<h4 class="card-header">设备总看板</h4>*@
+                                <h4 class="card-header">Equipment Dashboard (Total)</h4>
+                                <div class="card-body">
+
+                                    <p class="card-text">Equipment Status、Runrate、MTBA、Alarm Information etc.</p>
+
+                                </div>
+                                <div class="card-footer bg-transparent border-light">
+                                    <a href="@equipmentViewUrl" @*class="btn btn-primary"*@ style="color:dodgerblue;" target="_blank">Go to</a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    if (@ViewBag.site == "JQ" || @ViewBag.site == "HPH")
+                    {
+                        <div class="col">
+                            <div class="card bg-light">
+
+                                <h4 class="card-header">OTMS Dashboard</h4>
+                                <div class="card-body">
+
+                                    <p class="card-text">Oven's realtime status, temperture and location.</p>
+
+                                </div>
+                                <div class="card-footer bg-transparent border-light">
+                                    <a href="@otmsViewUrl" @*class="btn btn-primary"*@ style="color:dodgerblue;" target="_blank">Go to</a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    if (@ViewBag.site == "TW")
+                    {
+                        <div class="col">
+                            <div class="card bg-light">
+
+                                <h4 class="card-header">APL Packing Dashboard</h4>
+                                <div class="card-body">
+
+                                    <p class="card-text">APL Packing stations realtime data.</p>
+
+                                </div>
+                                <div class="card-footer bg-transparent border-light">
+                                    <a href="@APLPackingViewUrl" @*class="btn btn-primary"*@ style="color:dodgerblue;" target="_blank">Go to</a>
+                                </div>
+                            </div>
+                        </div>
+
+                    }
+                }
+
+
+            </div>
+
+        </div>
+
+
+
+            <footer class="fixed-bottom text-center">
+                <div>
+                    <!-- 底部固定区域 -->
+                    © @DateTime.Now.Year - EAP Dashboard - 智能制造开发中心
+                </div>
+            </footer>
+        </main>
+
+
+
+    </div>
+
+
+
+
+
+    <script>
+        //JavaScript代码区域
+        layui.use('element', function () {
+            var element = layui.element;
+            var layer = layui.layer;
+            // 监听导航点击事件
+            element.on('nav(nav)', function (elem) {
+                // 获取当前点击的导航名称
+                var navName = elem.text();
+                //console.log(navName)
+                // 显示当前选中的导航名称
+                //$('.selected-nav').text(navName);
+            });
+        });
+
+        function LogOut() {
+
+            $.post("Account/LogOut", function (data) {
+            }, "json");
+            window.location.href = 'Account/Login';
+
+        }
+
+
+
+
+    </script>
+
+    @*<a href="@RIDMViewUrl">跳转到合料机看板</a>
+        <a href="@equipmentViewUrl">跳转到设备总看板</a>*@
+</main>

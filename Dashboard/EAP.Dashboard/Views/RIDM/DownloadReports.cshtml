@@ -1,0 +1,717 @@
+﻿@{
+    ViewBag.Title = "下载报表";
+}
+<html>
+<head>
+    <link rel="stylesheet" href="~/Content/font-awesome/css/font-awesome.css">
+    <link rel="stylesheet" href="~/Content/font/iconfont.css">
+    <link rel="stylesheet" href="~/Content/bootstrap.min.css" />
+    @*<link rel="stylesheet" href="~/Scripts/layui/tableFilter.css" />*@
+    <script type="text/javascript" src="~/Scripts/jquery-3.4.1.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/echartjs/dist/echarts.js"></script>
+
+    <link rel="shortcut icon" href="~/Scripts/favicon.ico" />
+    <link rel="stylesheet" href="~/Scripts/layui/css/layui.css" media="all">
+    <script type="text/javascript" src="~/Scripts/layui/layui.js"></script>
+    @*<script type="text/javascript" src="~/Scripts/layui/tableFilter.js"></script>*@
+    @*<script type="text/javascript" src="~/Scripts/layui/tableEdit.js"></script>*@
+
+</head>
+<body>
+    <div class="dashboard-container" style="padding:3%;">
+        <form class="layui-form" action="">
+            <div class="layui-form-item">
+                <label class="layui-form-label">周号</label>
+                <div class="layui-input-block">
+                    <input class="layui-input" type="text" id="weekNumber" @*style="margin-left: 10px;*@ disabled />
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">开始</label>
+                <div class="layui-input-block">
+                    <input id="dateFilter1" type="text" name="startdate" required lay-verify="required" placeholder="请选择日期" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">结束</label>
+                <div class="layui-input-block">
+                    <input id="dateFilter2" type="text" name="enddate" required lay-verify="required" placeholder="请选择日期" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            @*<div class="layui-form-item">
+            <label class="layui-form-label">设备</label>
+            <div class="layui-input-block">
+                <select name="equipmentFilter" lay-verify="required">
+                </select>
+            </div>
+        </div>*@
+            <div class="layui-form-item">
+                <label class="layui-form-label">设备</label>
+                <div class="layui-input-block " id="eqpFilter">
+                    <input type="checkbox" name="all" title="all" id="selectAll" value="all">
+                    <input type="checkbox" class="checkbox-item" name="EQID[1]" title="1号机" value="EQAMS00001">
+                    <input type="checkbox" class="checkbox-item" name="EQID[2]" title="2号机" value="EQAMS00002">
+                    <input type="checkbox" class="checkbox-item" name="EQID[3]" title="3号机" value="EQAMS00003">
+                    <input type="checkbox" class="checkbox-item" name="EQID[4]" title="4号机" value="EQAMS00004">
+                    <input type="checkbox" class="checkbox-item" name="EQID[5]" title="5号机" value="EQAMS00005">
+
+
+                </div>
+            </div>
+
+            <!-- 显示选择的文件 -->
+            @*<div id="fileList"></div>*@
+
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn" lay-submit lay-filter="formDownload" id="formDownload">下载OEE报表</button>
+                    <button class="layui-btn" id="formUpload">上传OEE报表</button>
+                    @*<button class="layui-btn layui-btn-danger" lay-submit lay-filter="rateDownload" id="rateDownload" disabled>下载合料率报表</button>*@
+                    <button class="layui-btn" lay-submit lay-filter="logDownload" id="logDownload">下载机台日志</button>
+                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+
+                    <button class="layui-btn" lay-submit lay-filter="checkPartNumber" id="checkPartNumber">检查料号</button>
+                    <button class="layui-btn layui-btn-danger" lay-submit lay-filter="rateDownloadTest" id="rateDownloadTest">下载合料率报表(测试)</button>
+                    @*<button class="layui-btn" lay-submit lay-filter="queryPartNumber" id="queryPartNumber">所有料号</button>*@
+                </div>
+            </div>
+            <blockquote class="layui-elem-quote">常见问题排查：如果下载失败，请先确认合料机是否处于开机状态，且IP地址无变化。</blockquote>
+            <blockquote class="layui-elem-quote">料盘尺寸：7=7寸；13=13寸；NA=非7非13寸。</blockquote>
+            <div class="layui-form-item">
+
+            </div>
+
+        </form>
+        <table class="layui-hide" id="pnlist" lay-filter="pnlist"></table>
+    </div>
+    <script>
+        //layui.extend({
+        //    tableEdit: '../Scripts/layui/tableEdit'
+        //});
+        layui.use(['table', 'jquery', 'form', 'laydate', 'upload'], function () {
+            var laydate = layui.laydate
+                , form = layui.form
+                , table = layui.table
+                , upload = layui.upload
+                , $ = layui.jquery;
+                //, tableFilter = layui.tableFilter;
+                //, tableEdit = layui.tableEdit;
+            var pnTable;
+
+            //执行实例
+            upload.render({
+                elem: '#formUpload', //绑定元素
+                auto: true,  // 禁止自动上传，点击按钮后手动选择文件
+                accept: 'file',  // 只允许上传文件
+                //acceptMime: 'application/octet-stream',  // 允许的文件类型 MIME 类型
+                //exts: 'jpg|png|gif|jpeg|pdf|txt|xlsx',  // 限制上传的文件类型
+                //size: 1024 * 5,  // 限制文件大小（5MB）
+                bindAction: '#formUpload',
+                url:'UploadReport',
+              
+                // 文件上传成功后的回调函数
+                done: function (res) {
+                    // 上传成功后显示的提示信息
+                    //console.log(res); // 上传成功的回调
+                    //if (res.code == 0) {
+                    //    // 上传成功后的提示
+                    //    layer.msg('文件上传成功');
+                    //}
+                    layer.msg(res.message);
+                    setTimeout(function () {
+                        location.reload();
+                    }, 2000);
+                    //upload.reload();
+                    //reinitializeUpload()
+                    
+                },
+
+                // 文件上传失败的回调函数
+                error: function (error) {
+                    console.log(error)
+                    layer.msg('文件上传失败！');
+                    setTimeout(function () {
+                        location.reload();
+                    }, 2000)
+                    
+                }
+            });
+
+            // 重新初始化上传控件
+           
+            //开始日期
+            laydate.render({
+                elem: '#dateFilter1', //指定元素
+                max: genTime('day'),
+                //value: genTime('day'),
+                type: 'date',
+                done: function (value, date, endDate) {
+                    // 获取选中的日期
+                    var selectedDate = new Date(value);
+
+                    // 计算周号
+                    var firstDayOfYear = new Date(selectedDate.getFullYear(), 0, 1);
+                    var days = Math.floor((selectedDate - firstDayOfYear) / (24 * 60 * 60 * 1000));
+                    var weekNumber = Math.ceil((days + 1) / 7);
+                    var result = getYearWeek(value)
+                    //console.log(result)
+                    // 显示周号
+                    document.getElementById('weekNumber').value = result;
+                    laydate.render({
+                        elem: '#dateFilter2', //指定元素
+                        max: getWeekEnd(value),//如不需要限制可选时间为当前时间，可将此行注释
+                        value: getWeekEnd(value),
+                        type: 'date'
+
+                    });
+                }
+            });
+
+            //结束日期
+            laydate.render({
+                elem: '#dateFilter2', //指定元素
+                max: genTime('day'),//如不需要限制可选时间为当前时间，可将此行注释
+                value: genTime('day'),
+                type: 'date'
+
+            });
+
+            function genTime(opt) {
+                let now = new Date();
+                let year = now.getFullYear();
+                let mth = now.getMonth();
+                let day = now.getDate();
+                let month = mth + 1;
+                if (month < 10) {
+                    month = '0' + month
+                }
+                if (day < 10) {
+                    day = '0' + day
+                }
+                let str;
+                if (opt == 'day') {
+                    str = year + '-' + month + '-' + day;
+                } else if (opt == 'month') {
+                    str = year + '-' + month;
+                }
+                return str;
+            }
+
+            function getYearWeek(dateString) {
+                let da = dateString;//日期格式2015-12-30
+                //当前日期
+                let date1 = new Date(da.substring(0, 4), parseInt(da.substring(5, 7)) - 1, da.substring(8, 10));
+                //1月1号
+                let date2 = new Date(da.substring(0, 4), 0, 1);
+                //获取1月1号星期（以周一为第一天，0周一~6周日）
+                let dateWeekNum = date2.getDay() - 1;
+                if (dateWeekNum < 0) { dateWeekNum = 6; }
+                if (dateWeekNum < 4) {
+                    //前移日期
+                    date2.setDate(date2.getDate() - dateWeekNum);
+                } else {
+                    //后移日期
+                    date2.setDate(date2.getDate() + 7 - dateWeekNum);
+                }
+                let d = Math.round((date1.valueOf() - date2.valueOf()) / 86400000);
+                if (d < 0) {
+                    let date3 = (date1.getFullYear() - 1) + "-12-31";
+                    return getYearWeek(date3);
+                } else {
+                    //得到年数周数
+                    let year = date1.getFullYear();
+                    let week = Math.ceil((d + 1) / 7);
+                    return "Y" + year + " - Wk" + week;
+                }
+            }
+
+            function getWeekEnd(value) {
+                console.log(value)
+                let end = new Date();
+                if (value != "" && value.length > 0) {
+                    let today = new Date(value.substring(0, 10));
+                    let weekday = today.getDay();
+                    let monday;
+                    let sunday;
+                    if (weekday == 0) {
+                        monday = new Date(1000 * 60 * 60 * 24 * (weekday - 6) + today.getTime());
+                    } else {
+                        monday = new Date(1000 * 60 * 60 * 24 * (1 - weekday) + today.getTime());
+                    }
+                    if (weekday == 0) {
+                        sunday = today;
+                    } else {
+                        sunday = new Date(1000 * 60 * 60 * 24 * (7 - weekday) + today.getTime());
+                    }
+                    let month = monday.getMonth() + 1;
+                    if (month < 10) {
+                        month = "0" + month;
+                    }
+                    let day1 = monday.getDate();
+                    if (day1 < 10) {
+                        day1 = "0" + day1;
+                    }
+                    let start = "" + monday.getFullYear() + "-" + month + "-" + day1;
+                    let month2 = sunday.getMonth() + 1;
+                    if (month2 < 10) {
+                        month2 = "0" + month2;
+                    }
+                    let day2 = sunday.getDate();
+                    if (day2 < 10) {
+                        day2 = "0" + day2;
+                    }
+                    end = sunday.getFullYear() + "-" + month2 + "-" + day2;
+                    //ele.val(start + "~" + end);
+                } else {
+                    end = new Date();
+                }
+                return end;
+
+            }
+            //监听提交
+            form.on('submit(formDownload)', function (data) {
+                //layer.msg(JSON.stringify(data.field));
+                var originalObject = data.field
+                var eqps = Object.keys(originalObject) // 获取对象的所有属性名
+                    .filter(key => key.startsWith('EQID')) // 筛选出以EQID开头的属性名
+                    .map(key => originalObject[key]); // 获取这些属性对应的值并存入新数组
+
+                var startdate = data.field.startdate;
+                var enddate = data.field.enddate;
+
+                if (originalObject.hasOwnProperty('all')) {
+                    eqps = ['EQAMS00001', 'EQAMS00002', 'EQAMS00003', 'EQAMS00004']//,'EQAMS00005'
+                }
+                if (eqps.length == 0) {
+                    layer.msg("请选择设备！")
+                    return false;
+                }
+                layer.msg("报表下载中！");
+                // 禁用确认按钮
+                var $confirmBtn = $('#formDownload');
+                $confirmBtn.addClass('layui-btn-disabled').attr('disabled', true).text('数据计算中...');
+                DownloadData(eqps, startdate, enddate)
+
+                return true;
+            });
+            //监听提交
+            form.on('submit(logDownload)', function (data) {
+                //layer.msg(JSON.stringify(data.field));
+                var originalObject = data.field
+                var eqps = Object.keys(originalObject) // 获取对象的所有属性名
+                    .filter(key => key.startsWith('EQID')) // 筛选出以EQID开头的属性名
+                    .map(key => originalObject[key]); // 获取这些属性对应的值并存入新数组
+
+
+                var startdate = data.field.startdate;
+                var enddate = data.field.enddate;
+
+                if (originalObject.hasOwnProperty('all')) {
+                    eqps = ['EQAMS00001', 'EQAMS00002', 'EQAMS00003', 'EQAMS00004', 'EQAMS00005']
+                }
+                if (eqps.length == 0) {
+                    layer.msg("请选择设备！")
+                    return false;
+                }
+                layer.msg("报表下载中！");
+                DownloadDataOld(eqps, startdate, enddate)
+
+                return true;
+            });
+
+            //监听提交
+            form.on('submit(rateDownload)', function (data) {
+                //layer.msg(JSON.stringify(data.field));
+                var originalObject = data.field
+                var eqps = Object.keys(originalObject) // 获取对象的所有属性名
+                    .filter(key => key.startsWith('EQID')) // 筛选出以EQID开头的属性名
+                    .map(key => originalObject[key]); // 获取这些属性对应的值并存入新数组
+
+
+                var startdate = data.field.startdate;
+                var enddate = data.field.enddate;
+
+                if (originalObject.hasOwnProperty('all')) {
+                    eqps = ['EQAMS00001', 'EQAMS00002', 'EQAMS00003', 'EQAMS00004', 'EQAMS00005']
+                }
+                if (eqps.length == 0) {
+                    layer.msg("请选择设备！")
+                    return false;
+                }
+                layer.msg("报表下载中！");
+                DownloadRateData(eqps, startdate, enddate)
+
+                return true;
+            });
+
+            //监听提交
+            form.on('submit(rateDownloadTest)', function (data) {
+                //layer.msg(JSON.stringify(data.field));
+                var originalObject = data.field
+                var eqps = Object.keys(originalObject) // 获取对象的所有属性名
+                    .filter(key => key.startsWith('EQID')) // 筛选出以EQID开头的属性名
+                    .map(key => originalObject[key]); // 获取这些属性对应的值并存入新数组
+
+
+                var startdate = data.field.startdate;
+                var enddate = data.field.enddate;
+
+                if (originalObject.hasOwnProperty('all')) {
+                    eqps = ['EQAMS00001', 'EQAMS00002', 'EQAMS00003', 'EQAMS00004', 'EQAMS00005']
+                }
+                if (eqps.length == 0) {
+                    layer.msg("请选择设备！")
+                    return false;
+                }
+                layer.msg("报表下载中！");
+                DownloadRateDataTest(eqps, startdate, enddate)
+
+                return true;
+            });
+            form.on('submit(checkPartNumber)', function (data) {
+                console.log('click check part number!')
+                //layer.msg(JSON.stringify(data.field));
+                //event.preventDefault();
+                var originalObject = data.field
+                var eqps = Object.keys(originalObject) // 获取对象的所有属性名
+                    .filter(key => key.startsWith('EQID')) // 筛选出以EQID开头的属性名
+                    .map(key => originalObject[key]); // 获取这些属性对应的值并存入新数组
+
+
+                var startdate = data.field.startdate;
+                var enddate = data.field.enddate;
+
+                if (originalObject.hasOwnProperty('all')) {
+                    eqps = ['EQAMS00001', 'EQAMS00002', 'EQAMS00003', 'EQAMS00004', 'EQAMS00005']
+                }
+                if (eqps.length == 0) {
+                    layer.msg("请选择设备！")
+                    return false;
+                }
+                layer.msg("正在检查料号是否设置完整！");
+                PretestPartNumber(eqps, startdate, enddate)
+                return false;
+            })
+
+            $("#queryPartNumber").click(function () {
+                table.render({
+                    elem: '#pnlist'
+                    , height: 'full-250'
+                    , url: 'GetPartNumberList' //数据接口
+                    , title: '料号配置表'
+                    , id: "pnlist"
+                    //, data: data
+                    , page: true
+                    , toolbar
+                    //, method: 'POST'
+                    , cols: [[ //表头
+                        { field: 'PART_NUMBER', width: '25%', title: '料号', sort: true, filter: true }
+                        , { field: 'MAT_GROUP', title: '料号组别', sort: true, edit: true }
+                        , { field: 'ROUND_VALUE', title: '最小包装量', sort: true, edit: true }
+
+                        , { field: 'REEL_SIZE', width: '25%', edit: true, title: '料盘尺寸' }
+                        , { field: 'LAST_EDITOR', title: '最后修改者' }
+
+                    ]]
+
+                });
+                return false;
+            })
+            //var apitableFilterIns = tableFilter.render({
+            //    'elem': '#pnlist',
+            //    'mode': 'api',
+            //    'url': 'GetPartNumberList',
+            //    'filters': [
+
+            //        {
+            //            field: 'PART_NUMBER',
+            //            type: 'input'
+            //        }
+            //    ],
+            //    'done': function (filters) {
+            //        //resultTable.reload();
+            //        console.log(filters)
+            //    }
+
+            //});
+            table.on('edit(pnlist)', function (obj) { //注：edit是固定事件名，tableEvent是table原始容器的属性 lay-filter="对应的值"
+                console.log(obj.value);
+                if (obj.field == 'REEL_SIZE') {
+                   
+                    if (obj.value != "NA" && obj.value != '7' && obj.value != '13') {
+                        layer.msg('料盘尺寸填写不正确！');
+                        return false;
+                    }
+                }
+                layer.confirm('is not?', { icon: 3, title: '修改确认', content: obj.field + '=' + obj.value }, function (index) {
+                    //do something
+                    $.ajax({
+                        url: 'EditPartNumber',//控制器活动,返回一个分部视图,并且给分部视图传递数据.
+                        data: {
+                            "targetData": obj.data,
+                            //"value": obj.value,
+                            //"field": obj.field
+                        },//传给服务器的数据(即后台AddUsers()方法的参数,参数类型要一致才可以)
+                        type: 'POST',
+                        contentType: 'application/x-www-form-urlencoded; charset=UTF-8',//数据类型必须有
+                        async: false,
+                        success: function (data) {
+                            layer.msg(data.message);
+                            //paramtable.reload();
+
+                        },
+                        error: function (message) {
+                            alert('修改失败!');
+                        }
+                    });
+                    layer.close(index);
+                },
+                    function (index) {
+                        layer.msg('取消修改');
+                        pnTable.reload();
+                    })
+
+                //layer.msg(obj.value);
+                //  layer.msg(obj.field);
+                // layer.msg(obj.data.ID);
+            });
+
+
+            function DownloadData(eqps, startdate, enddate) {
+
+                $.ajax({
+                    type: 'post',
+                    xhrFields: {
+                        responseType: 'blob' // 设置响应类型为二进制数据流
+                    },
+                    data: {
+                        "eqps": eqps,
+                        "starttime": startdate,
+                        "endtime": enddate,
+                    },
+                    url: 'DownloadReportData',
+                    success: function (data) {
+
+                        var blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                        var link = document.createElement('a');
+                        link.href = window.URL.createObjectURL(blob);
+                        link.download = "合料机_" + startdate + "~" + enddate + "_OEE.xlsx";
+                        document.body.appendChild(link);
+                        link.click();
+                        layer.msg('<em style="color:white;font-style:normal;font-weight:normal">' + '下载成功！' + '</em>');
+
+                        var $confirmBtn = $('#formDownload');
+                        $confirmBtn.removeClass('layui-btn-disabled').removeAttr('disabled').text('下载OEE报表');
+                        document.body.removeChild(link);
+                    },
+                    error: function (err) {
+                        layer.msg('<em style="color:white;font-style:normal;font-weight:normal">' + '下载失败！' + '</em>');
+
+                        var $confirmBtn = $('#formDownload');
+                        $confirmBtn.removeClass('layui-btn-disabled').removeAttr('disabled').text('下载OEE报表');
+                        document.body.removeChild(link);
+                        console.log(err)
+                    }
+                });
+            }
+
+            function DownloadDataOld(eqps, startdate, enddate) {
+
+                $.ajax({
+                    type: 'post',
+                    xhrFields: {
+                        responseType: 'blob' // 设置响应类型为二进制数据流
+                    },
+                    data: {
+                        "eqps": eqps,
+                        "starttime": startdate,
+                        "endtime": enddate,
+                    },
+                    url: 'DownloadLogData',
+                    success: function (data) {
+                        var blob = new Blob([data], { type: 'application/octet-stream' });
+                        var link = document.createElement('a');
+                        link.href = window.URL.createObjectURL(blob);
+                        link.download = "合料机_" + startdate + "~" + enddate + '_机台日志.zip'; // 下载的文件名
+                        document.body.appendChild(link);
+                        link.click();
+                        layer.msg('<em style="color:white;font-style:normal;font-weight:normal">' + '下载成功！' + '</em>');
+                        document.body.removeChild(link);
+                    },
+                    error: function (err) {
+                        layer.msg('<em style="color:white;font-style:normal;font-weight:normal">' + '下载失败！' + '</em>');
+                        console.log(err)
+                    }
+                });
+            }
+
+            function DownloadRateData(eqps, startdate, enddate) {
+
+                $.ajax({
+                    type: 'post',
+                    xhrFields: {
+                        responseType: 'blob' // 设置响应类型为二进制数据流
+                    },
+                    data: {
+                        "eqps": eqps,
+                        "starttime": startdate,
+                        "endtime": enddate,
+                        "week": document.getElementById('weekNumber').value
+                    },
+                    url: 'DownloadIntegrateRate',
+                    success: function (data) {
+
+                        var blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                        var link = document.createElement('a');
+                        link.href = window.URL.createObjectURL(blob);
+                        link.download = "合料机_" + startdate + "~" + enddate + "_合料率.xlsx";
+                        document.body.appendChild(link);
+                        link.click();
+                        layer.msg('<em style="color:white;font-style:normal;font-weight:normal">' + '下载成功！' + '</em>');
+
+                        var $confirmBtn = $('#formDownload');
+                        $confirmBtn.removeClass('layui-btn-disabled').removeAttr('disabled').text('下载OEE报表');
+                        document.body.removeChild(link);
+                    },
+                    error: function (err) {
+                        layer.msg('<em style="color:white;font-style:normal;font-weight:normal">' + '下载失败！' + '</em>');
+
+                        var $confirmBtn = $('#formDownload');
+                        $confirmBtn.removeClass('layui-btn-disabled').removeAttr('disabled').text('下载OEE报表');
+                        document.body.removeChild(link);
+                        console.log(err)
+                    }
+                });
+            }
+
+            function PretestPartNumber(eqps, startdate, enddate) {
+
+                $.ajax({
+                    type: 'post',
+                    //xhrFields: {
+                    //    responseType: 'blob' // 设置响应类型为二进制数据流
+                    //},
+                    data: {
+                        //"eqps": eqps,
+                        "starttime": startdate,
+                        "endtime": enddate,
+                        "week": document.getElementById('weekNumber').value
+                    },
+                    url: 'PrecheckRoundValue',
+                    success: function (data, textStatus, xhr) {
+                        console.log('precheck PN:')
+                        console.log(data)
+                        if (data.length > 0) {
+                            // 加载表格
+                            LoadPartNumberTables(data)
+                        }
+
+                    },
+                    error: function (err) {
+                        layer.msg('<em style="color:white;font-style:normal;font-weight:normal">' + '检查失败！' + '</em>');
+
+                        //var $confirmBtn = $('#formDownload');
+                        //$confirmBtn.removeClass('layui-btn-disabled').removeAttr('disabled').text('下载合料机报表');
+                        //document.body.removeChild(link);
+                        console.log(err)
+                    }
+                });
+            }
+            function LoadPartNumberTables(PartNumbers) {
+                //console.log(PartNumbers)
+                var params = [{ value: "7" }, { value: "13" }, { value: "NA" }];
+                $.ajax({
+                    url: 'GetPartNumberList',//控制器活动,返回一个分部视图,并且给分部视图传递数据.
+                    data: {
+                        PartNumbers
+                    },//传给服务器的数据(即后台AddUsers()方法的参数,参数类型要一致才可以)
+                    type: 'POST',
+                    contentType: 'application/x-www-form-urlencoded; charset=UTF-8',//数据类型必须有
+                    async: false,
+                    success: function (data) {
+                        console.log(data.data)
+                        pnTable = table.render({
+                            elem: '#pnlist'
+                            , height: 'full-250'
+                            //, url: 'GetPartNumberList' //数据接口
+                            , title: '料号配置表'
+                            , id: "pnlist"
+                            , data: data.data
+                            , page: true
+                            , toolbar
+                            //, method: 'POST'
+                            , cols: [[ //表头
+                                { field: 'PART_NUMBER', width: '25%', title: '料号', sort: true }
+                                , { field: 'MAT_GROUP', title: '料号组别', sort: true, edit: true }
+                                , { field: 'ROUND_VALUE', title: '最小包装量', sort: true, edit: true }
+                                
+                                , {field: 'REEL_SIZE', width: '25%', edit: true, title: '料盘尺寸'}
+                                , { field: 'LAST_EDITOR', title: '最后修改者' }
+                                
+                            ]]
+                           
+                        });
+                    },
+                    error: function (message) {
+                        alert('error!');
+                    }
+                });
+                
+                
+
+            }
+
+            function DownloadRateDataTest(eqps, startdate, enddate) {
+
+                $.ajax({
+                    type: 'post',
+                    xhrFields: {
+                        responseType: 'blob' // 设置响应类型为二进制数据流
+                    },
+                    data: {
+                        //"eqps": eqps,
+                        "starttime": startdate,
+                        "endtime": enddate,
+                        "week": document.getElementById('weekNumber').value
+                    },
+                    url: 'DownloadIntegrateRate',
+                    success: function (data, textStatus, xhr) {
+
+                        // 判断返回的数据是否是文件
+                        var contentType = xhr.getResponseHeader("Content-Type");
+                        console.log(contentType)
+                        if (contentType != 'application/json; charset=utf-8') {
+                            const blob = new Blob([data], { type: 'application/x-xls' });
+                            const link = document.createElement('a');
+                            link.href = URL.createObjectURL(blob);
+                            link.download = "合料机_" + startdate + "~" + enddate + "_合料率.xlsx";//'report.xlsx';  // 设置文件名
+                            link.click();
+                        } else {
+                            console.log(data.msg)
+                            alert("下载失败，存在料号未设置最小包装量/料盘尺寸，请先点击检查料号！");
+                            //layer.open({ content: data.msg });
+                            //('<em style="color:white;font-style:normal;font-weight:normal">' + `${data.msg}` + '</em>');
+
+                        }
+                    },
+                    error: function (err) {
+                        layer.msg('<em style="color:white;font-style:normal;font-weight:normal">' + '下载失败！' + '</em>');
+                        alert(error)
+                        //var $confirmBtn = $('#formDownload');
+                        //$confirmBtn.removeClass('layui-btn-disabled').removeAttr('disabled').text('下载合料机报表');
+                        //document.body.removeChild(link);
+                        console.log(err)
+                    }
+                });
+            }
+        });
+    </script>
+
+</body>
+</html>

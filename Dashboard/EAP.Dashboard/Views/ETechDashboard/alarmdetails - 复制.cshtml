@@ -1,0 +1,1187 @@
+﻿@{
+    ViewBag.Title = "Alarm Details";
+
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="~/Scripts/layui/css/layui.css" media="all">
+    <link rel="stylesheet" href="~/Content/font/iconfont.css">
+    <link rel="stylesheet" href="~/Content/font-awesome/css/font-awesome.css">
+    <link rel="shortcut icon" href="~/Scripts/favicon.ico" />
+    <link rel="stylesheet" href="~/Scripts/bootstrap-5.1.3-dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/Content/acc_alarmDetails.css">
+
+    <style>
+        .alarmlist table tr th {
+            background-color: #010d4a;
+            cursor: pointer;
+            color: white;
+            font-size: 10px;
+        }
+
+        .alarmlist table tr td {
+            background-color: #010d4a;
+            cursor: pointer;
+            color: white;
+        }
+    </style>
+
+</head>
+
+
+<body>
+    <script src="~/Scripts/layui/layui.table.formdate.js"></script>
+
+    <script type="text/javascript" src="~/Scripts/layui/layui.js"></script>
+
+
+    <script type="text/javascript" src="~/Scripts/jquery-3.4.1.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/echartjs/dist/echarts.js"></script>
+    <script src="~/Scripts/bootstrap-5.1.3-dist/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/js/jquery.waypoints.min.js"></script>
+    <script>
+
+         layui.use(['carousel', 'form', 'slider', 'laydate', 'element'], function () {
+             //var carousel = layui.carousel
+
+             var  form = layui.form
+                 , laydate = layui.laydate
+                 , slider = layui.slider
+                 , element = layui.element,
+                 table = layui.table;
+             var c_option = {
+                 elem: '.carousel'
+                 , width: '100%' //设置容器宽度
+                , height: '100%'
+                 , arrow: 'always' //始终显示箭头
+                 , interval: 100000
+                 , indicator: 'outside'
+
+             }
+
+             var selectweek = $("#weekFilter option:selected").val();
+             var startdatetime = "@DateTime.Today.ToString("yyyy-MM-dd")";
+             var enddatetime = "@DateTime.Today.ToString("yyyy-MM-dd")";
+             var week;
+             window.weekArr;
+
+             $(".startdateselect").change(function(){
+                     startdatetime = $(this).val();
+
+                     //console.log("starttime:" + startdatetime);
+             });
+             $(".enddateselect").change(function(){
+                     enddatetime = $(this).val();
+
+                     //console.log("enddatetime:" + enddatetime);
+             });
+             $(".weekselect").change(function(){
+                     week = $(this).val();
+
+                     //console.log("week:" + week);
+             });
+
+
+             $("#weekFilter").change(function(){
+                 selectweek = $(this)
+                    .find("option:selected")
+                    .text();
+                 //getLatestAlarmRate(selectweek);
+
+
+             });
+
+             $(".exportAlarm").click(function () {
+                 //console.log(window.weekArr)
+                 layer.open({
+                     title: '下载报表'
+                     , type: 2
+                     , btn: ['确定']
+                     , content: 'DownloadReports'
+                     , area: ['35%', '45%']
+                     , success: function (layero, index) {
+
+                         ////向layer页面传值，传值主要代码
+                         var body = layer.getChildFrame('body', index);
+                         //body.find("[id='equipment']").val(e.data.equipment);
+                         //body.find("[id='station']").val('Station_' + (e.data.value[0] + 1));
+                         body.find("[id='weekFilter']").html(window.weekArr);
+
+                         // 在子页面加载完毕后，通过iframe访问子页面的window对象
+                         const iframeWindow = window[layero.find('iframe')[0]['name']];
+                         iframeWindow.dataFromParent = window.weekArr;  // 传递数据
+                     }
+                     , yes: function (index) {
+                         layer.close(index);
+                     }
+
+                 });
+             });
+             //新增开线时间
+             $("#recordstartend").click(function () {
+                 layer.open({
+                     title: 'Add Manufaturing Time'
+                     , type: 2
+                     , btn: ['OK', 'Cancel']
+                     , content: 'setWeek'
+                     , area: ['45%', '55%']
+                     , success: function (layero, index) {
+                         //向layer页面传值，传值主要代码
+                         var body = layer.getChildFrame('body', index);
+
+                         body.find("[id='line']").val('ETECH');
+                     }
+                     , yes: function (index) {
+                         var res = window["layui-layer-iframe" + index].callback();
+                         var data = JSON.parse(res);
+                         //console.log(data);
+                         if (data.start >= data.end) {
+                             layer.msg('错误：开线时间大于结束时间！');
+                         } else {
+                             //console.log(data);
+                             // layer.msg(res);
+                             setStartEnd(data.start, data.end, data.idleduration, data.eqptype);
+                             layer.close(index);
+                         }
+
+                     }, btn2: function (index, layero) {
+                         layer.msg('取消操作');
+                     }
+
+                 });
+             });
+
+
+             const dict = {};
+             addMapping("STATION_1", "Plasma Treatment")
+             addMapping("STATION_2", "Dispense the Sealing Glue to FH")
+             addMapping("STATION_3", "Assemble the cover to FH")
+             addMapping("STATION_4", "Auto-screwing")
+             addMapping("STATION_5", "Auto-unload the FH Assy")
+
+             //getLatestAlarmRate();
+             GetHistoryAlarmRate();
+             GetStatus();
+             ChartssetInterval();
+
+             // 添加映射关系
+             function addMapping(key, value) {
+
+                 dict[key] = value;
+             }
+
+
+             // 获取映射结果
+             function getMapping(key) {
+                 return dict[key] || '';
+             }
+             function getLatestAlarmRate(selectweek) {
+                     $.ajax({
+                         type: 'post',
+                         dataType: 'json',
+                         data: {
+                             "selectweek": selectweek,
+                             "eqpType": 'ETECH'
+                         },
+                         url: 'GetAlarmRate',
+                         success: function (retdata) {
+
+                             var eqdata = retdata.eqdata;
+                             var eqids = retdata.eqids;
+                             var alarmrates = retdata.alarmrates;
+                             var starttime = retdata.starttime;
+                             var endtime = retdata.endtime;
+                            var alarmtimes = retdata.alarmtimes;
+                            var duration = starttime +"~" + endtime;
+                            var maxtime = retdata.maxtime;
+                            var maxrate = retdata.maxrate;
+                           gettrendchart('trendchart', alarmrates,eqdata,alarmtimes,duration,maxtime,maxrate);
+                           console.log(eqids[0])
+                           getAlarmDetails(eqids[0],selectweek);
+                           week = selectweek;
+
+
+
+
+                         },
+                         error: function () {
+
+                         }
+                     });
+
+             }
+
+             function setStartEnd(starttime, endtime, idleduration, eqpType) {
+                 $.ajax({
+                     type: 'post',
+                     dataType: 'json',
+                     data: {
+                         "starttime": starttime,
+                         "endtime": endtime,
+                         "idleduration": idleduration,
+                         "eqpType": eqpType
+                     },
+                     url: 'SetStartEnd',//ACCBoxDashboard/
+                     success: function (retdata) {
+                         var eqdata = retdata.eqdata;
+                         var alarmrates = retdata.alarmrates;
+                         var starttime = retdata.starttime;
+                         var endtime = retdata.endtime;
+                         var alarmtimes = retdata.alarmtimes;
+                         var duration = starttime + "~" + endtime;
+                         var maxtime = retdata.maxtime;
+                         var maxrate = retdata.maxrate;
+                         //gettrendchart('trendchart', alarmrates, eqdata, alarmtimes, duration, maxtime, maxrate);
+                     },
+                     error: function () {
+
+                     }
+                 });
+
+             }
+             function getWeek() {
+                 $.ajax({
+                     type: 'post',
+                     dataType: 'json',
+                     data: {
+
+                     },
+                     url: 'GetWeek',
+                     success: function (retdata) {
+
+
+                          $("#weekFilter").html(retdata.option);
+                          //getLatestAlarmRate(retdata.latestweek);
+
+
+
+                     },
+                     error: function () {
+
+                     }
+                 });
+
+             }
+             function GetHistoryAlarmRate() {
+                     $.ajax({
+                         type: 'post',
+                         dataType: 'json',
+                         data: {
+                             "eqpType": 'ETECH'
+                         },
+                         url: 'GetHistoryAlarmRate',
+                         success: function (retdata) {
+
+                             var weekdata = retdata.weekdata;
+                             var totaltimes = retdata.totaltimes;
+                             var totalrates = retdata.totalrates;
+                             var maxtime = retdata.maxtime;
+                             var maxrate = retdata.maxrate;
+                             window.weekArr = retdata.weekOption
+                           gethistorychart('historychart', totalrates,weekdata,totaltimes,maxtime,maxrate);
+                           getLatestAlarmRate(weekdata[weekdata.length-1]);
+                         },
+                         error: function () {
+
+                         }
+                     });
+
+             }
+             function GetStatus() {
+                     $.ajax({
+                         type: 'post',
+                         dataType: 'json',
+                         data: {
+
+                         },
+                         url: 'GetStatus',
+                         success: function (retdata) {
+                             var eqpProfile = retdata.eqpProfiles
+                             console.log(eqpProfile)
+
+                             GenerateStatusCard(eqpProfile);
+                         },
+                         error: function () {
+
+                         }
+                     });
+
+             }
+
+             function GenerateStatusCard(eqpdata){
+                 var pagecount = eqpdata.length / 5;
+                 var pageText = '<div class="row">';
+                 for (var page = 0; page < pagecount; page++) {
+
+
+
+                    for (var cardnum = page * 5; cardnum < (page + 1) * 5 && cardnum < eqpdata.length; cardnum++) {
+                        var eqp = eqpdata[cardnum];
+                        if (eqp.EQID == 'STATION_1') {
+                            eqp.Status = 'Run'
+                        }
+                        var sysStateColorMap = new Map([['Unknown', 'form-control bg-secondary'], ['Idle', 'form-control bg-warning']
+                            , ['Run', 'form-control bg-success'], ['Alarm', 'form-control bg-danger']
+                        ]);
+
+                        var stateColor = sysStateColorMap.get(eqp.Status);
+                        var name = getMapping(eqp.EQID);
+
+
+                        pageText //+= '<div class="col-2" style = "padding:0;height:10%">'
+                            //+ '<div class="box-status " style="height: 80%;  ">'
+                            += '<input type = "text" class="col-2 ' + stateColor + '" value = "'+name+'" style="border:none;color: white; font-size:0.85rem; text-align:center;height:10%;width:auto; margin:1%" readonly>'
+
+                            //+ '<div class="layui-card-body" style="opacity:1; height: 75% ">'
+                            //+ '<div style="color: white; font-size:1rem;">Output: ' + output + '</div>'
+                            //+ '<div style="color: white;font-size:1rem;">Yield: ' + yields + '</div>'
+                            //+'</div></div>';
+                    }
+                        pageText += ' </div>';
+                    }
+
+
+                    document.getElementById("statuscontent").innerHTML = pageText;
+             }
+             function ExportData(week) {
+                 var params = {"week":week}
+                 $.ajax({
+                     type: 'post',
+                     data: {
+
+                         "week": week
+
+                     },
+                     url: 'ExportAlarmDataByWeek',
+                     success: function (response,status,request) {
+
+                           var disp = request.getResponseHeader('Content-Disposition');
+                           if(disp && disp.search('attachment' != -1)){
+                               var form = $('<form method="POST" action="' + 'ExportAlarmDataByWeek' + '">');
+                               $.each(params, function(k, v) {
+                                   form.append($('<input type="hidden" name="' + k +
+                                   '" value="' + v + '">'));
+                               });
+                               $('body').append(form);
+                               form.submit();
+                           }
+                         },
+                         error:function(err){
+                             console.log(err)
+                         }
+                 });
+
+             }
+             function getAlarmDetails(EQID,week){
+                     $.ajax({
+                         type: 'post',
+                         dataType: 'json',
+                         data: {
+                             "EQID":EQID,
+                             "week": week,
+                             "eqpType":"ETECH"
+                         },
+                         url: 'GetAlarmDetails',
+                         success: function (retdata) {
+                           //alert(retdata.result);
+                           var alarmlist = retdata.alarmList;
+                           var alarmall = retdata.alarmtotal.totalalarmtime;
+                           var codelist = retdata.alarmtotal.totalcodelist;
+                           var textlist = retdata.alarmtotal.totalcodetext;
+                           var alarmpie = retdata.alarmtotal.totalalarmpie;
+                           //console.log(codelist);
+                           getcodechart('codechart',alarmall,codelist,textlist,'bar',week,EQID);
+                           getcodepie('codepie',alarmpie,codelist,textlist,'pie');
+                         },
+                         error: function () {
+                            alert("error!");
+                         }
+                     });
+             }
+
+
+             function ChartssetInterval() {
+                //每1分钟刷新一次界面
+                setInterval(function () {
+                    GetStatus();
+                }, 30000);
+             }
+
+             function gettrendchart(id, trendYield,trenddates,alarmtimes,duration,maxtime,maxrate) {
+
+                 var chartDom = document.getElementById(id);
+                var myChart = echarts.init(chartDom);
+                //var maxtimes = (double) maxtime;
+                $(window).on('resize', function () {//
+                 //屏幕大小自适应，重置容器高宽
+                    chartDom.style.width = window.innerWidth * 0.6 + 'px';
+                    chartDom.style.height = window.innerHeight * 0.4 + 'px';
+                    myChart.resize();
+                });
+                chartDom.style.width = window.innerWidth * 0.6 + 'px';
+                chartDom.style.height = window.innerHeight * 0.4 + 'px';
+
+                var option;
+
+                option = {
+                    title: {
+
+                        text: duration,
+                        textStyle:{
+                            color:"#fff"
+                        }
+                    },
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            type: 'cross'
+                        }
+                    },
+                    legend: {
+                        data: ['Rate','Time'],
+                        textStyle:{
+                            color:"#fff"
+                        }
+                    },
+                    grid: {
+
+                    },
+                    xAxis: {
+                        type: 'category',
+                        axisTick: {
+                            alignWithLabel: true
+                        },
+                        data: trenddates,
+                        axisLine: {
+                            lineStyle: {
+                               color: "#fff",
+                            }
+                        }
+                   },
+                   yAxis: [
+                       {
+                           type: 'value',
+                           name: 'Rate',
+                           position: 'left',
+                           min: 0,
+                           max: maxrate,
+                           splitLine: {     //网格线
+                               show: true,
+                               lineStyle: {
+                                  color: '#22376d'
+                               }
+                           },
+                           axisLine: {
+                               lineStyle: {
+                                  color: "#fff",
+                               }
+                           },
+                           axisLabel: {
+                               formatter: '{value} %'
+                           }
+                       },
+                       {
+                           type: 'value',
+                           name: 'Time',
+                           position: 'right',
+                           min: 0,
+                           max: maxtime,
+                           splitLine: {     //网格线
+                               show: false,
+                               lineStyle: {
+                                  color: '#22376d'
+                               }
+                           },
+                           axisLine: {
+                               lineStyle: {
+                                  color: "#fff",
+                               }
+                           },
+                           axisLabel: {
+                               formatter: '{value} min'
+                           }
+                     }
+                     ],
+                   series: [
+                     {
+                         name: 'Rate',
+                         type: 'line',
+                         data: trendYield,
+                         label: {
+                             show: true,
+                             position: 'top',
+                             color:'white',
+                             formatter: '{c} %'
+                         },
+                         lineStyle:{
+                             color:'yellow'
+                           },
+                           z: 2
+
+                     },
+                     {
+                         name: 'Time',
+                         type: 'bar',
+                         yAxisIndex: 1,
+                         data: alarmtimes,
+                         label: {
+                             show: true,
+                             position: 'top',
+                             color:'white',
+                             formatter: '{c} min'
+                         },
+                         lineStyle:{
+                             color:'yellow'
+                         },
+                         z:1
+                     }
+
+                    ]
+                };
+                option && myChart.setOption(option);
+                myChart.resize();
+                myChart.on('click',function(param){
+                    var stationID
+                    if(param.name == 'FCT1'){
+                        stationID='FCT101'
+                        getAlarmDetails(stationID,week);
+                    }
+                    if(param.name == 'FCT2'){
+                        stationID='FCT201'
+                        getAlarmDetails(stationID,week);
+                    }
+                    else{
+                        getAlarmDetails(param.name,week);
+                    }
+                    /* old method
+                    var url = '/Statistics/ACCboxDashboard/alarmdetails?EQID='+param.name+'&week='+week;
+
+                    layui.use([], function () {
+
+                        layer.open({
+                            title: 'Alarm Details'
+                            , type: 2
+                            , btn: ['确定']
+                            , content: url //'/Dashboard/BoxDetails'
+                            , area: ['90%', '90%']
+                            , id:'layer_alarmlist'
+                            , success: function (layero, index) {
+                                ////向layer页面传值，传值主要代码
+                                var body = layer.getChildFrame('body', index);
+                                body.find("[id='week']").val(week);
+                                body.find("[id='equipment']").val(param.name);
+                                //body.find("[id='datepicker']").val($("#datepicker").val());
+                            }
+                            , yes: function (index) {
+                                layer.close(index);
+                            }
+
+                        });
+
+                    });
+                    */
+                })
+
+             }
+            function gethistorychart(id, trendYield,trenddates,alarmtimes,maxtime,maxrate) {
+                var chartDom = document.getElementById(id);
+                var myChart = echarts.init(chartDom);
+
+                $(window).on('resize', function () {//
+                    //屏幕大小自适应，重置容器高宽
+                    chartDom.style.width = window.innerWidth * 0.6 + 'px';
+                    chartDom.style.height = window.innerHeight * 0.4 + 'px';
+                    myChart.resize();
+                });
+                chartDom.style.width = window.innerWidth * 0.6 + 'px';
+                chartDom.style.height = window.innerHeight * 0.4 + 'px';
+
+                var option;
+
+                option = {
+                title: {
+                    text: "Alarm Rate Trend",
+                    textStyle:{
+                        color:"#fff"
+                    }
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'cross'
+                    }
+                },
+                legend: {
+                    data: ['Rate','Time'],
+                    textStyle:{
+                        color:"#fff"
+                    }
+                },
+                grid: {},
+                xAxis: {
+                    type: 'category',
+                    axisTick: {
+                        alignWithLabel: true
+                    },
+                    data: trenddates,
+                    axisLine: {
+                        lineStyle: {
+                            color: "#fff",
+                        }
+                    }
+                },
+                yAxis: [
+                    {
+                        type: 'value',
+                        name: 'Rate',
+                        position: 'left',
+                        min: 0,
+                        max: maxrate,
+                        splitLine: {     //网格线
+                            show: false,
+                            lineStyle: {
+                                color: '#22376d'
+                            }
+                        },
+                        axisLine: {
+                            lineStyle: {
+                            color: "#fff",
+                            }
+                        },
+                        axisLabel: {
+                            formatter: '{value} %'
+                        }
+                   },
+                   {
+                       type: 'value',
+                       name: 'Time',
+                       position: 'right',
+                       min: 0,
+                       max: maxtime,
+                       splitLine: {     //网格线
+                           show: false,
+                           lineStyle: {
+                               color: '#22376d'
+                           }
+                       },
+                       axisLine: {
+                           lineStyle: {
+                               color: "#fff",
+                           }
+                       },
+                       axisLabel: {
+                           formatter: '{value} min'
+                       }
+                   }],
+                series: [
+                    {
+                        name: 'Rate',
+                        type: 'line',
+                        data: trendYield,
+                        label: {
+                            show: true,
+                            position: 'top',
+                            color:'white',
+                            formatter: '{c} %'
+                        },
+                        lineStyle:{
+                            color:'yellow'
+                        },
+                        //markLine:{
+                        //    silent:true,
+                        //    itemStyle:{
+                        //        normal:{
+                        //            color:'#FA8565',
+                        //        }
+                        //    },
+                        //    data : [{
+                        //        yAxis:2
+                        //    }]
+                        //}
+                    },
+                    {
+                        name: 'Time',
+                        type: 'bar',
+                        data: alarmtimes,
+                        yAxisIndex: 1,
+                        label: {
+                            show: true,
+                            position: 'top',
+                            color:'white',
+                            formatter: '{c} min'
+                        },
+                        lineStyle:{
+                            color:'yellow'
+                        }
+                    }]
+                };
+                option && myChart.setOption(option);
+                myChart.resize();
+                myChart.on('click',function(param){
+                //console.log(param.name);
+
+                getLatestAlarmRate(param.name);
+                week = param.name;
+                //getStatusDetails(week);
+                })
+
+            }
+             function getdatechart(id, chartdata) {
+                var chartDom = document.getElementById(id);
+                var myChart = echarts.init(chartDom);
+
+                $(window).on('resize', function () {
+                    //屏幕大小自适应，重置容器高宽
+                    chartDom.style.width = window.innerWidth * 1.0 + 'px';
+                    chartDom.style.height = window.innerHeight * 0.4 + 'px';
+                    myChart.resize();
+                });
+                chartDom.style.width = window.innerWidth * 1.0 + 'px';
+                chartDom.style.height = window.innerHeight * 0.4 + 'px';
+
+                function renderItem(params, api) {
+                    var categoryIndex = api.value(0);//value第一个参数
+                    //console.log(categoryIndex);
+                    var start = api.coord([api.value(1), categoryIndex]);
+                    var end = api.coord([api.value(2), categoryIndex]);
+                    //console.log(start);
+                    //console.log(end);
+                    var height = api.size([0, 1])[1] * 0.6;
+
+                    var rectShape = echarts.graphic.clipRectByRect({
+                        x: start[0],
+                        y: start[1] - height / 2,
+                        width: end[0] - start[0],
+                        height: height
+                    }, {
+                        x: params.coordSys.x,
+                        y: params.coordSys.y,
+                        width: params.coordSys.width,
+                        height: params.coordSys.height
+                    });
+
+                    return rectShape && {
+                        type: 'rect',
+                        transition: ['shape'],
+                        shape: rectShape,
+                        style: api.style()
+                    };
+                }
+
+                option = {
+                    tooltip: {
+                        formatter: function (params) {
+                            if (params.data.alarmtext == "")
+                                    return params.marker + params.name + ': ' + params.value[1] + ' ~ ' + params.value[2] + ' Duration: ' + params.data.duration;
+                            else
+                                    return params.marker + params.name + ': ' + params.value[1] + ' ~ ' + params.value[2] + ' Duration: ' + params.data.duration + '<br>AlarmText:<br>' + params.data.alarmtext;
+                        }
+                    },
+                    title: {
+                        text: 'Status Details'
+                    },
+                    dataZoom: [{
+                        type: 'slider',
+                        filterMode: 'weakFilter',
+                        showDataShadow: false,
+                        //top: 400,
+                        labelFormatter: ''
+                    }, {
+                        type: 'inside',
+                        filterMode: 'weakFilter'
+                    }],
+                    grid: {
+                        //height: 300
+                    },
+                    xAxis: {
+                        scale: true,
+                        type: 'time'
+
+                    },
+                    yAxis: {
+                        data: ['Status']
+                    },
+                    series: [{
+                        type: 'custom',
+                        renderItem: renderItem,
+                        // itemStyle: {
+                        //     opacity: 0.8
+                        // },
+                        encode: {
+                            x: [1, 2],
+                            y: 0
+                        },
+                        data: chartdata
+                    }]
+                };
+
+                option && myChart.setOption(option);
+                myChart.resize();
+            }
+
+            function getcodepie(id, alarmall,codelist,textlist,type) {
+                //console.log(alarmall);
+                var alarmArr = Object.entries(alarmall);
+                //console.log(alarmArr);
+                var chartDom = document.getElementById(id);
+                var myChart = echarts.init(chartDom);
+                //var maxtimes = (double) maxtime;
+                $(window).on('resize', function () {//
+                 //屏幕大小自适应，重置容器高宽
+                    chartDom.style.width = window.innerWidth * 0.6 + 'px';
+                    chartDom.style.height = window.innerHeight * 0.35 + 'px';
+                    myChart.resize();
+                });
+                chartDom.style.width = window.innerWidth * 0.6 + 'px';
+                chartDom.style.height = window.innerHeight * 0.35 + 'px';
+
+                var option;
+
+                option = {
+                    title: {
+
+                        text: 'Alarm Ratio',
+                        textStyle:{
+                            color:"#fff"
+                        }
+                    },
+                    tooltip: {
+                        trigger: 'item',
+                        triggerOn:'mousemove',
+
+                        formatter:function(param){
+                            var codetext = '';
+                                 //int i
+                        for(var i = 0;i < textlist.length;i++){
+                            var item = textlist[i].AlarmCode;
+                            if(item == param.name) codetext = textlist[i].AlarmText;
+                        }
+                        return codetext;
+                        }
+                    },
+                    legend: {
+                        data: ['Rate','Time'],
+                        textStyle:{
+                            color:"#fff"
+                        }
+                    },
+                    grid: {
+
+                    },
+                   series: [
+
+                     {
+                         name: 'Code',
+                         type: type,
+
+                         data: alarmall,
+                         label: {
+                             show: true,
+                             formatter: '{b}({d}%)',
+                             color:'white'
+
+                         },
+                         labelLine: {
+                                length: 3,
+                                normal: {
+                                    lineStyle: {
+                                        color: 'rgba(255, 255, 255, 0.3)'
+                                    },
+                                    smooth: 0.2,
+                                    size:30
+                                    //length: this.standSize / 50,
+                                    //length2: this.standSize / 100,
+                                }
+                            }
+                     }
+
+                    ]
+                };
+                option && myChart.setOption(option);
+                myChart.resize();
+                myChart.on('on',function(param){
+                    //getAlarmDetails(param.name,week);
+                    //var codetext = '';
+                                 //int i
+                        //for(var i = 0;i < textlist.length;i++){
+                            //var item = textlist[i].AlarmCode;
+                            //if(item == param.name) codetext = textlist[i].AlarmText;
+                       // }
+                       // return codetext;
+                    //for(interval i = 0;i<=)
+
+                })
+
+            }
+            function getcodechart(id, alarmall,codelist,textlist,type,week,EQID) {
+                var chartDom = document.getElementById(id);
+                var myChart = echarts.init(chartDom);
+                //console.log(alarmall);
+                var maxTime = parseFloat(alarmall[0]);
+                for(var i = 0; i < alarmall.length ; i++){
+
+                    if(parseFloat(alarmall[i])>maxTime) maxTime = parseFloat(alarmall[i]);
+                }
+
+                $(window).on('resize', function () {//
+                 //屏幕大小自适应，重置容器高宽
+                    chartDom.style.width = window.innerWidth * 0.6 + 'px';
+                    chartDom.style.height = window.innerHeight * 0.35 + 'px';
+                    myChart.resize();
+                });
+                chartDom.style.width = window.innerWidth * 0.6 + 'px';
+                chartDom.style.height = window.innerHeight * 0.35 + 'px';
+
+                var option;
+
+                option = {
+                    title: {
+
+                        text: week + "-"+EQID,
+                        textStyle:{
+                            color:"#fff"
+                        }
+                    },
+                    tooltip: {
+                        trigger: 'item',
+                        triggerOn:'mousemove',
+                        axisPointer: {
+                            type: 'cross'
+                        },
+                        formatter:function(param){
+                            var codetext = '';
+                                 //int i
+                        for(var i = 0;i < textlist.length;i++){
+                            var item = textlist[i].AlarmCode;
+                            if(item == param.name) codetext = textlist[i].AlarmText;
+                        }
+                        return codetext;
+                        }
+                    },
+                    legend: {
+                        data: ['Rate','Time'],
+                        textStyle:{
+                            color:"#fff"
+                        }
+                    },
+                    grid: {
+
+                    },
+                    xAxis: {
+                        type: 'category',
+                        axisTick: {
+                            alignWithLabel: true
+                        },
+                        data: codelist,
+                        axisLine: {
+                            lineStyle: {
+                               color: "#fff",
+                            }
+                        }
+                   },
+                   yAxis: [
+                       {
+
+                       },
+                       {
+                           type: 'value',
+                           name: 'Time',
+                           position: 'left',
+                           min: 0,
+                           max: Math.round(maxTime),
+                           splitLine: {     //网格线
+                               show: true,
+                               lineStyle: {
+                                  color: '#22376d'
+                               }
+                           },
+                           axisLine: {
+                               lineStyle: {
+                                  color: "#fff",
+                               }
+                           },
+                           axisLabel: {
+                               formatter: '{value} min'
+                           }
+                     }
+                     ],
+                   series: [
+
+                     {
+                         name: 'Time',
+                         type: type,
+                         yAxisIndex: 1,
+                         data: alarmall,
+                         label: {
+                             show: true,
+                             position: 'top',
+                             color:'white',
+                             formatter: function (param) {
+
+
+                    }
+                         },
+                         lineStyle:{
+                             color:'yellow'
+                         }
+                     }
+
+                    ]
+                };
+                option && myChart.setOption(option);
+                myChart.resize();
+                myChart.on('on',function(param){
+                    //getAlarmDetails(param.name,week);
+                    var codetext = '';
+                                 //int i
+                        for(var i = 0;i < textlist.length;i++){
+                            var item = textlist[i].AlarmCode;
+                            if(item == param.name) codetext = textlist[i].AlarmText;
+                        }
+                        return codetext;
+                    //for(interval i = 0;i<=)
+
+                })
+
+            }
+
+         })
+
+
+
+
+
+        function showFullScreen() {
+
+            /*判断是否全屏*/
+            let isFullscreen = document.fullScreenElement//W3C
+                || document.msFullscreenElement //IE11
+                || document.mozFullScreenElement //火狐
+                || document.webkitFullscreenElement //谷歌
+                || false;
+
+            if (!isFullscreen) {
+                let el = document.documentElement;
+                if (el.requestFullscreen) {
+                    el.requestFullscreen();
+                } else if (el.mozRequestFullScreen) {
+                    el.mozRequestFullScreen();
+                } else if (el.webkitRequestFullscreen) {
+                    el.webkitRequestFullscreen();
+                } else if (el.msRequestFullscreen) {
+                    el.msRequestFullscreen();
+                }
+                $("#fullScreen").removeClass("fa-expand").addClass("fa-compress");
+            }
+            else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.webkitCancelFullScreen) {
+                    document.webkitCancelFullScreen();
+                }
+                $("#fullScreen").removeClass("fa-compress").addClass("fa-expand");
+            }
+        }
+
+        var t = null;
+        t = setTimeout(time, 1000);
+        function time() {
+            clearTimeout(t);
+            dt = new Date();
+            var y = dt.getFullYear();
+            var mt = dt.getMonth() + 1;
+            var day = dt.getDate();
+            var h = dt.getHours();
+            var m = dt.getMinutes();
+            var s = dt.getSeconds();
+            document.getElementById("showTime").innerHTML = y + "年" + mt + "月" + day + "日 -" + h + "时" + m + "分" + s + "秒";
+            t = setTimeout(time, 1000);
+        }
+
+
+    </script>
+
+
+    <div class="item bi-1 row" id="dashboard-title">
+        <div class='col-2 logo'><img src="~/Content/Pictures/logo/Logo_W_SMDi4_400x65_简.png" /> </div>
+        <h1 class='col-8' id="title">Alarm Details · E-TECH</h1>
+
+        <div class="col-2">
+
+            <button class="btn btn-primary" type="button" onclick="showFullScreen()">
+                Full Screen
+            </button>
+
+
+
+        </div>
+    </div>
+
+    <div class="container-fluid accdata text-center">
+        <div class="row statuspanel">
+            <div class="col-8 panel-item" id="statuscontent">
+            </div>
+            <div class="col-4 panel-item">
+
+                <div class="row">
+                    <div class="col input-group">
+                        <button type="button" class="form-control btn-primary exportAlarm" id="liveToastBtn">Export AlarmData</button>
+                        <div class="toast-container position-fixed bottom-0 end-0 p-3">
+                            <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                                <div class="toast-header">
+
+                                    <strong class="me-auto">Notice</strong>
+
+                                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                                </div>
+                                <div class="toast-body">
+                                    Downloading File, please wait a moment ;)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col input-group">
+                        <button type="button" class="form-control btn-primary" id="recordstartend">新增开线时间</button>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-4 fpy">
+
+                <div id="historychart"></div>
+            </div>
+            <div class="col-8 yield">
+                <div id="trendchart"></div>
+            </div>
+
+        </div>
+        <div class="row">
+            <div class="col-8 yield">
+                <div id="codechart"></div>
+                @*<div id="datechart" style="width: 100%;margin: 0 auto;margin-top: 0px"></div>*@
+            </div>
+            <div class="col-4 yield">
+                <div id="codepie"></div>
+                @*<div id="datechart" style="width: 100%;margin: 0 auto;margin-top: 0px"></div>*@
+            </div>
+
+        </div>
+    </div>
+
+
+
+
+</body>
+
+
+
+</html>

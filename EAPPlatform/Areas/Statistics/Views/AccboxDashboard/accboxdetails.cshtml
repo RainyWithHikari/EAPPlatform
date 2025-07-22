@@ -1,0 +1,1122 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="/layui/css/layui.css" media="all">
+    <link rel="stylesheet" href="/sitecss/statistics/accdashboard.css">
+    <link rel="stylesheet" href="/font/iconfont.css">
+    <link rel="stylesheet" href="/font-awesome/css/font-awesome.css">
+    <link rel="shortcut icon" href="/favicon.ico" />
+
+
+    <link rel="stylesheet" href="/bootstrap-5.1.3-dist/css/bootstrap.min.css" />
+    <style>
+        .alarmlist table tr th {
+            background-color: #010d4a;
+            cursor: pointer;
+            color: white;
+            font-size: 10px;
+            padding: 0;
+            margin: 0;
+        }
+
+        .alarmlist table tr td {
+            background-color: #010d4a;
+            cursor: pointer;
+            color: white;
+            padding: 0;
+            margin: 0;
+        }
+
+        .header .controlbox {
+            font-size: 0.5rem;
+            right: 0.3rem;
+            top: 0.2rem;
+            cursor: default;
+        }
+    </style>
+
+</head>
+
+
+<body>
+    <script src="/jquery.min.js"></script>
+    <script src="/echarts/echarts.js"></script>
+    <script src="/echarts/echarts-liquidfill.js"></script>
+    <script src="/bootstrap-5.1.3-dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/layui/layui.js"></script>
+
+    <script>
+
+         layui.use(['carousel', 'form', 'slider', 'laydate', 'element'], function () {
+             var carousel = layui.carousel
+                 , form = layui.form
+                 , laydate = layui.laydate
+                 , slider = layui.slider
+                 , element = layui.element,
+                 table = layui.table;
+             var c_option = {
+                 elem: '#carousel'
+                 , width: '100%' //设置容器宽度
+                 , height: '95%'
+                 , arrow: 'always' //始终显示箭头
+                 , interval: 5000
+                 , indicator: 'outside'
+             }
+
+
+             //console.log(rs);
+
+             var ins = carousel.render(c_option);
+
+             const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+             const toastTrigger = document.getElementById('liveToastBtn')
+        const toastLiveExample = document.getElementById('liveToast')
+
+        if (toastTrigger) {
+            const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample)
+            toastTrigger.addEventListener('click', () => {
+                toastBootstrap.show()
+            })
+        }
+             var datetime = "@DateTime.Today.ToString("yyyy-MM-dd")";
+             var eqid = "MAIN2";
+             var target;
+             //console.log(eqid);
+             var UpdateTimeYield;
+             var UpdateTimeOutput;
+             //console.log(eqid);
+             $(".dateselect").val(datetime);
+             $(".dateselect").change(function(){
+                     datetime = $(this).val();
+                     getData(eqid,datetime,'Default');
+                     //console.log(datetime);
+                 });
+             $("#stationFilter").change(function(){
+                 
+                     eqid = $(this)
+                    .find("option:selected").val();
+                    
+                     getData(eqid,datetime,'Default');
+                      var eqpobj = document.getElementById("equipmentID");
+                      //eqpobj.innerHTML = eqid;
+                      //console.log(eqpobj)
+                    //console.log(eqid);
+
+              });
+              $(".exportdata").click(function(){
+                  var EQID = $("#stationFilter").val();
+                  var date =$(".dateselect").val();
+                  //console.log(EQID,date);
+                  ExportData(EQID,date);
+
+
+              });
+
+
+
+
+                 //var test = $("#stationFilter").val();
+                 //console.log(test);
+             getData(eqid,datetime,'Default');
+              $(function () {
+                getEQP();
+                getData(eqid,datetime,'Default');
+                ChartssetInterval();
+            })//设置时间初始值
+            function ChartssetInterval() {
+                //每1分钟刷新一次界面
+                setInterval(function () {
+                    getData(eqid,datetime,'Default');
+                }, 30000);
+            }
+             getEQP();
+             function getData(eqp,datetime,selecttype) {
+
+                     $.ajax({
+                         type: 'post',
+                         dataType: 'json',
+                         data: {
+
+                             "EQID": eqp,
+                             "datetime": datetime,
+                             "selecttype":selecttype// $("#datepicker").val(),
+                         },
+                         url: '/Statistics/ACCBoxDashboard/GetStation',
+                         success: function (retdata) {
+                             //console.log(retdata)
+                             var trendoutput = retdata.trenddata.outputs;
+                             //console.log(trendoutput)
+                             var trendfpy = retdata.trenddata.fpys;
+                             //var trendoee =  retdata.trenddata.oee
+                             target = retdata.target;
+                             var trendoee = [];
+                             //var trendrunrates = retdata.trenddata.runrates;
+                             for(var i = 0 ; i < trendoutput.length;i++){
+                                 //console.log(trendoutput[i])
+                                 trendoee[i] = ((parseFloat(trendoutput[i])/target)*100).toFixed(2)
+                                 //console.log(parseFloat(trendoutput[i]))
+                             }
+
+                             //console.log(trendoee)
+                             //var data = JSON.parse(retdata.details.RUNSTOPDATA);
+                             //var tabledata = JSON.parse(retdata.details.TABLEDATA);
+                             //var alarmdata = retdata.alarmdata;
+
+                             var status = retdata.status.STATUS;
+                             var statusupdatetime = retdata.status.UPDATETIME;
+
+                             var statusobj = document.getElementById("status");
+                             statusobj.innerHTML = status;
+
+                             statusobj.attributes[6].nodeValue = statusupdatetime;
+
+                             if(status == "Run"){
+                                 statusobj.className = "";
+                                 statusobj.className += "form-control bg-success";
+
+                             }
+                             else if(status == "Unknown"){
+                                 statusobj.className = "";
+                                 statusobj.className += "form-control bg-secondary";
+
+                             }
+                             else if(status == "Alarm"){
+                                 statusobj.className = "";
+                                 statusobj.className += "form-control bg-danger";
+
+                             }
+                             else if(status == "Idle"){
+                                 statusobj.className = "";
+                                 statusobj.className += "form-control bg-warning";
+
+                             }
+                             //console.log(statusobj);
+                             //$("#status").html(status);
+                             var trendoutputsdates = retdata.trenddata.outputdates;
+                             var trendfpysdates = retdata.trenddata.fpysdates;
+                             //var trendrunratesdates = retdata.trenddata.runratesdates;
+                             var trendoeedates = retdata.trenddata.oeedates;
+                             var alarmdata = retdata.alarmdata;
+                             //console.log(alarmdata);
+                             var yieldrealtime = retdata.yieldrtdata;
+                             //console.log(yieldrealtime);
+                             var yieldobj = document.getElementById("yield");
+                             yieldobj.innerHTML = "Yield: " + yieldrealtime[0].Value + "%";
+                             UpdateTimeYield = yieldrealtime[0].UpdateTime;
+                             yieldobj.attributes[6].nodeValue = UpdateTimeYield;
+                             getyieldchart(parseFloat(yieldrealtime[0].Value))
+
+                             var outputrealtime = retdata.outputrtdata;
+                             //var datenow = "@DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss")"
+                             var datenow = new Date().toLocaleString('chinese', { hour12: false });
+                             var dateDay = "@DateTime.Today.ToString("yyyy/MM/dd")" + " 09:00:00"
+                             var dateNight = "@DateTime.Today.ToString("yyyy/MM/dd")" + " 21:00:00"
+                             console.log("datenow:"+datenow)
+                             console.log("dateDay:"+dateDay)
+                             console.log("dateNight:"+dateNight)
+                             
+                             if( new Date(dateDay) <= new Date(datenow) && new Date(dateNight)>=new Date(datenow)){
+                                 var timespan = new Date(datenow).getTime() - new Date(dateDay).getTime()
+                                 var totalspan = new Date(dateNight).getTime() -new Date(dateDay).getTime()
+                                 console.log(timespan/totalspan)
+                                 var realtimeTarget = parseFloat(target) * (timespan/totalspan)
+                                 if(realtimeTarget == 0){
+                                     realtimeTarget = parseFloat(target)
+                                 }
+                                 console.log(realtimeTarget)
+                                 var OEEvalue = (parseFloat(outputrealtime[0].Value) / realtimeTarget);
+                             //console.log(OEEvalue);
+                             getoeeliquidchart(OEEvalue);
+                                //getOutputStatuschart(realtimeTarget,parseFloat(outputrealtime[0].Value));
+                             }
+                             else{
+                                 var OEEvalue = (parseFloat(outputrealtime[0].Value) / target);
+                                 getoeeliquidchart(OEEvalue);
+                             }
+                             //console.log(outputrealtime);
+                             
+
+
+                             var outputobj = document.getElementById("fpy");
+                             outputobj.innerHTML = "Output: " + outputrealtime[0].Value;
+                             outputobj.attributes[6].nodeValue = outputrealtime[0].UpdateTime;
+                             $(outputobj).tooltip();
+                            
+                             
+                            getOutputStatuschart(parseFloat(target),parseFloat(outputrealtime[0].Value));
+                             /*
+                             var runraterealtime = retdata.runratertdata;
+                             var runrateobj = document.getElementById("runrate");
+                             runrateobj.value = "Run Rate: " + runraterealtime +"%";
+                             */
+                             var alarmduration = retdata.alarmduration;
+                             var alarmdurationobj =  document.getElementById("alarmduration");
+                             alarmdurationobj.innerHTML = "Duration: "+alarmduration;
+
+
+
+                             getoutputchart('trendchart', trendoutput,trendoutputsdates,target);
+                             getfpychart('fpychart',trendfpy,trendfpysdates);
+                             getrunratechart('runratechart', trendoutputsdates, trendoee);
+                             //getdatechart('datechart', chartdata);
+
+                             table.render({
+                                 elem: '#alarmhist'
+
+                                 , cols: [[ //标题栏
+
+                                     { field: 'ALARMTIME', title: 'Alarm Time',align:"center" }
+                                     , { field: 'ALARMCODE', title: 'Alarm Code',align:"center" }
+                                     , { field: 'ALARMTEXT', title: 'Alarm Text' ,align:"center"}
+
+
+                                 ]]
+                                 , data: alarmdata
+                                 , size: 'sm'
+                                 , even: true
+                                 ,limit:8
+
+                             });
+
+                         },
+                         error: function () {
+
+                         }
+                     });
+
+             }
+             function getEQP() {
+                     $.ajax({
+                         type: 'post',
+                         dataType: 'json',
+                         data: {
+
+                         },
+                         url: '/Statistics/ACCBoxDashboard/GetEQP',
+                         success: function (retdata) {
+
+
+                              $("#stationFilter").html(retdata.option);
+
+                              var defaultopt = retdata.defaultoption;
+                              getData(defaultopt,datetime,'Default');
+
+                              //console.log(defaultopt,datetime);
+
+                         },
+                         error: function () {
+
+                         }
+                     });
+
+             }
+             function ExportData(eqp,datetime) {
+                    var params = {"EQID":eqp,"datetime": datetime}
+                     $.ajax({
+                         type: 'post',
+                         data: {
+
+                             "EQID": eqp,
+                             "datetime": datetime,
+                         },
+                         url: '/Statistics/ACCBoxDashboard/ExportDataByStation',
+                         beforeSend:function(){
+                             $("#loading").show();
+                         },
+                         success: function (response,status,request) {
+
+                           var disp = request.getResponseHeader('Content-Disposition');
+                           if(disp && disp.search('attachment' != -1)){
+                               var form = $('<form method="POST" action="' + '/Statistics/ACCBoxDashboard/ExportDataByStation' + '">');
+                               $.each(params, function(k, v) {
+                                   form.append($('<input type="hidden" name="' + k +
+                                   '" value="' + v + '">'));
+                               });
+                               $('body').append(form);
+                               form.submit();
+                           }
+                         },
+                         complete:function(){
+                             //$("#loading").hide();
+                         },
+                         error:function(err){
+                             //console.log(err)
+                         }
+                     });
+
+             }
+             
+         })
+
+
+
+         function getoutputchart(id, trendoutput,trenddates,target) {
+             var chartDom = document.getElementById(id);
+             var myChart = echarts.init(chartDom);
+
+             $(window).on('resize', function () {//
+                 //屏幕大小自适应，重置容器高宽
+                 chartDom.style.width = window.innerWidth * 0.47 + 'px';
+                 chartDom.style.height = window.innerHeight * 0.35 + 'px';
+                 myChart.resize();
+             });
+             chartDom.style.width = window.innerWidth * 0.47 + 'px';
+             chartDom.style.height = window.innerHeight * 0.35 + 'px';
+
+             var option;
+
+             option = {
+                 title: {
+                     text: 'Output Trends',
+                     textStyle:{
+                        color:"#fff"
+                     }
+                 },
+                 tooltip: {
+                     trigger: 'axis',
+                     axisPointer: {
+                         type: 'cross'
+                     }
+                 },
+                 legend: {
+                     data: ['Output'],
+                     textStyle:{
+                        color:"#fff"
+                     }
+                 },
+                 grid: {
+
+                 },
+                 xAxis: {
+                     type: 'category',
+                     axisTick: {
+                         alignWithLabel: true
+                     },
+                     data: trenddates,
+                     axisLine: {
+                               lineStyle: {
+                               color: "#fff",
+                          }
+                        }
+                 },
+                 yAxis: [
+                     {
+                         type: 'value',
+                         name: 'Output',
+                         position: 'left',
+                         min: function(value){return 0},
+                         max: function(value){return Math.ceil(value.max+value.max*0.2)},
+                         splitLine: {     //网格线
+                             show: true,
+                             lineStyle: {
+                                color: '#22376d'
+                             }
+                         },
+                          axisLine: {
+                               lineStyle: {
+                               color: "#fff",
+                          }
+                        }
+                     }],
+                 series: [
+                     {
+                         name: 'Output',
+                         type: 'bar',
+                         
+                         data: trendoutput,
+                         label: {
+                             show: true,
+                             position: 'top',
+                             color:'white'
+                         },
+                         itemStyle:{
+                             color: '#6699CC',
+                         },
+                         markLine:{
+                                 silent:true,
+                                 itemStyle:{
+                                     normal:{
+                                         color:'#FA8565',
+
+                                     }
+                                 },
+                                 data : [{
+                                     yAxis:target
+                                 }]
+                             }
+                     }
+
+                 ]
+             };
+             option && myChart.setOption(option);
+             myChart.resize();
+
+         }
+         function getfpychart(id, trendfpy,trenddates) {
+             var chartDom = document.getElementById(id);
+             var myChart = echarts.init(chartDom);
+             //console.log(trendfpy);
+             $(window).on('resize', function () {//
+                 //屏幕大小自适应，重置容器高宽
+                 chartDom.style.width = window.innerWidth * 0.47 + 'px';
+                 chartDom.style.height = window.innerHeight * 0.35 + 'px';
+                 myChart.resize();
+             });
+             chartDom.style.width = window.innerWidth * 0.47 + 'px';
+             chartDom.style.height = window.innerHeight * 0.35 + 'px';
+
+             var option;
+
+             option = {
+                 title: {
+                     text: 'Yield Trends',
+                     textStyle:{
+                        color:"#fff"
+                        }
+                 },
+                 tooltip: {
+                     trigger: 'axis',
+                     axisPointer: {
+                         type: 'cross'
+                     }
+                 },
+                 legend: {
+                     data: ['Yield'],
+                     textStyle:{
+                     color:"#fff"
+                 }
+             },
+             grid: {
+
+                 },
+                 xAxis: {
+                     type: 'category',
+                     axisTick: {
+                         alignWithLabel: true
+                     },
+                     data: trenddates,
+                     axisLine: {
+                               lineStyle: {
+                               color: "#fff",
+                          }
+                        }
+                 },
+                 yAxis: [
+                     {
+                         type: 'value',
+                         name: 'Yield',
+                         position: 'left',
+                         min: function(value){
+                             if(value.min == 0) return 0; 
+                             else{
+                                 //return Math.floor(value.min*0.5)
+                                 return 0
+                             }
+                         },
+                         max: function(value){return Math.ceil(value.max)},
+                         splitLine: {     //网格线
+                             show: true,
+                             lineStyle: {
+                                color: '#22376d'
+                             }
+                         },
+                         axisLine: {
+                               lineStyle: {
+                               color: "#fff",
+                          },
+                          axisLabel: {
+                        formatter: '{value} %'
+                    }
+                        }
+                     }],
+                 series: [
+                     {
+                         name: 'Yield',
+                         type: 'line',
+                         areaStyle: {
+                           color: '#339933',
+                         },
+                         smooth:true,
+                         data:trendfpy,
+                         label: {
+                             show: true,
+                             position: 'top',
+                             color:'white',
+                             formatter: '{c} %'
+                         },
+                         lineStyle:{
+                             color:'yellow'
+                         }
+                     }
+
+
+                 ]
+             };
+             option && myChart.setOption(option);
+             myChart.resize();
+
+         }
+         function getrunratechart(id, trenddates ,trendrunrates) {
+             var chartDom = document.getElementById(id);
+             var myChart = echarts.init(chartDom);
+             //console.log(trendrunrates);
+             $(window).on('resize', function () {
+                 //屏幕大小自适应，重置容器高宽
+                 chartDom.style.width = window.innerWidth * 0.47 + 'px';
+                 chartDom.style.height = window.innerHeight * 0.35 + 'px';
+                 myChart.resize();
+             });
+             chartDom.style.width = window.innerWidth * 0.47 + 'px';
+             chartDom.style.height = window.innerHeight * 0.35 + 'px';
+
+             var option;
+
+             option = {
+                 title: {
+                     text: 'Cap. Utilization Trends',
+                     textStyle:{
+                        color:"#fff"
+                     }
+                 },
+                 tooltip: {
+                     trigger: 'axis',
+                     axisPointer: {
+                         type: 'cross'
+                     }
+                 },
+                 legend: {
+                     data: ['runrate'],
+                     textStyle:{
+                        color:"#fff"
+                     }
+                 },
+                 grid: {
+
+                 },
+                 xAxis: {
+                     type: 'category',
+                     axisTick: {
+                         alignWithLabel: true
+                     },
+                     data: trenddates,
+                     axisLine: {
+                               lineStyle: {
+                               color: "#fff",
+                          }
+                        }
+                 },
+                 yAxis: [
+                      {
+                         type: 'value',
+                         name: 'Cap. Utilization',
+                         position: 'left',
+                         min: function(value){return 0},
+                         max: function(value){return Math.ceil(value.max+value.max*0.1)},
+                         splitLine: {     //网格线
+                             show: true,
+                             lineStyle: {
+                                color: '#22376d'
+                             }
+                         },
+                         axisLine: {
+                               lineStyle: {
+                               color: "#fff",
+                         },
+                         axisLabel: {
+                            formatter: '{value} %'
+                         }
+                      }
+
+                 }],
+
+                 series: [
+                     {
+                         name: 'Cap. Utilization',
+                         type: 'line',
+                         smooth: true,
+                         areaStyle: {
+                            color: '#339933',
+                         },
+                         data: trendrunrates,
+                         label: {
+                             show: true,
+                             position: 'top',
+                             color:'white',
+                             formatter: '{c} %'
+                         },
+                         lineStyle:{
+                             color:'yellow'
+                         }
+
+                     }
+
+                 ]
+             };
+             option && myChart.setOption(option);
+             myChart.resize();
+
+         }
+         function getoeeliquidchart(iOEE){
+             dataOEE = [iOEE, iOEE, iOEE, iOEE];
+             var chartDom = document.getElementById('divOEE');
+             var myChart = echarts.init(chartDom);
+             //console.log(trendrunrates);
+             $(window).on('resize', function () {
+                 //屏幕大小自适应，重置容器高宽
+                 chartDom.style.width = window.innerWidth * 0.11 + 'px';
+                 chartDom.style.height = window.innerHeight * 0.11 + 'px';
+                 myChart.resize();
+             });
+             chartDom.style.width = window.innerWidth * 0.11 + 'px';
+             chartDom.style.height = window.innerHeight * 0.11 + 'px';
+
+             var option;
+              //console.log(dataOEE)
+              var option = {
+                series: [{
+                    type: 'liquidFill',
+                    center: ["50%", "50%"],
+                    radius: "95%",
+                    color: ['#45BDFF', '#45BDFF', '#45BDFF', '#45BDFF'],
+                    waveLength: '100%',
+                    data: dataOEE,
+                    //backgroundStyle: {
+                    //    borderWidth: 5,
+                    //    borderColor: 'red',
+                    //    //color: 'yellow'
+                    //},
+                    itemStyle: {
+                        shadowBlur: 0
+                    },
+                    outline: {
+                        borderDistance: 0,
+                        itemStyle: {
+                            borderWidth: 3,
+                            borderColor: '#156ACF',
+                            shadowBlur: 20,
+                        }
+                    },
+                    label: {
+                        normal: {
+                            textStyle: {
+                                color: 'black',
+                                insideColor: 'yellow',
+                                fontSize: 20
+                            }
+                        }
+                    },
+                }]
+             };
+
+             option && myChart.setOption(option);
+             myChart.resize();
+         }
+         function getOutputStatuschart(iTarget,iActual){
+             var chartDom = document.getElementById('divCapacityStatus');
+             var myChart = echarts.init(chartDom);
+             //console.log(iTarget);
+             $(window).on('resize', function () {
+                 //屏幕大小自适应，重置容器高宽
+                 chartDom.style.width = window.innerWidth * 0.12 + 'px';
+                 chartDom.style.height = window.innerHeight * 0.11 + 'px';
+                 myChart.resize();
+             });
+             chartDom.style.width = window.innerWidth * 0.12 + 'px';
+             chartDom.style.height = window.innerHeight * 0.11 + 'px';
+             var option = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'shadow'
+                    }
+                },
+                grid: {
+                    x: '2%',
+                    y: '1%',
+                    width: '95%',
+                    height: '99%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'value',
+                    splitNumber: 1,
+                    boundaryGap: [0, 0.01],
+                    axisLabel: {
+                        show: true,
+                        textStyle: {
+                            color: '#fff'
+                        },
+                        fontSize: 7,
+                        rotate: 10
+                    },
+                    axisTick: {
+                        show: false
+                    },
+                    axisLine: {
+                        show: true,
+                        lineStyle: {
+                            color: 'white'
+                        }
+                    },
+                },
+                yAxis: {
+                    type: 'category',
+                    data: ['Target', 'Now'],
+                    axisLabel: {
+                        show: true,
+                        textStyle: {
+                            color: '#fff'
+                        },
+                        fontSize: 7
+                    },
+                    axisTick: {
+                        show: false
+                    },
+                    axisLine: {
+                        show: false,
+                        lineStyle: {
+                            color: 'white'
+                        }
+                    },
+                },
+                series: [
+                    {
+                        type: 'bar',
+                        data: [iTarget,iActual],
+                        itemStyle: {
+                            normal: {
+                                color: '#45BDFF',
+                            }
+                        },
+                        label: {
+                            show: true,
+                            position: 'inside'
+                        },
+                    },
+                ]
+             };
+             option && myChart.setOption(option);
+             myChart.resize();
+             myChart.on('click',function(param){
+               layer.open({
+                    title: 'Set Target'
+                    , type: 2
+                    , id:'SetTarget'
+                    , btn: ['确定', '取消']
+                    , content: '/Statistics/ACCBoxDashboard/setTarget'
+                    , area: ['40%', '50%']
+                    , success: function (layero, index) {
+                        //向layer页面传值，传值主要代码
+                        //   var body = layer.getChildFrame('body', index);
+                        var body = layer.getChildFrame('body', index);
+                        //var select = document.getElementById("eqp");
+                        //var options = select.options;
+                        //var index = select.selectedIndex;
+                        body.find("[id='line']").val('ACC-BOX');
+                    }
+                    , yes: function (index) {
+                        var res = window["layui-layer-iframe" + index].callback();
+                        var data = JSON.parse(res);
+                        //console.log(data);
+                        //if (data.start >= data.end) {
+                           // layer.msg('错误：开线时间大于结束时间！');
+                        //} else {
+                            //console.log(data);
+                            // layer.msg(res);
+                            //layer.msg('新增设备功能未开放');
+                            target = data.Target;
+                            //console.log(target);
+                            setTarget(target);
+                        
+                            layer.close(index);
+                        //}
+
+                     }, btn2: function (index, layero) {
+                            layer.msg('取消操作');
+                     }
+
+                });
+             })
+         }
+         function getyieldchart(iYield){
+             var chartDom = document.getElementById('divQualityRatio');
+             var myChart = echarts.init(chartDom);
+             //console.log(trendrunrates);
+             $(window).on('resize', function () {
+                 //屏幕大小自适应，重置容器高宽
+                 chartDom.style.width = window.innerWidth * 0.12 + 'px';
+                 chartDom.style.height = window.innerHeight * 0.11 + 'px';
+                 myChart.resize();
+             });
+             chartDom.style.width = window.innerWidth * 0.12 + 'px';
+             chartDom.style.height = window.innerHeight * 0.11 + 'px';
+             var option = {
+                series: [
+                    {
+                        type: "gauge",
+                        center: ["50%", "65%"], // 默认全局居中
+                        radius: "85%",
+                        startAngle: 200,
+                        endAngle: -20,
+                        axisLine: {
+                            show: true,
+                            lineStyle: { // 属性lineStyle控制线条样式
+                                color: [ //表盘颜色
+                                    [0.9, "red"],//0-80%处的颜色
+                                    //[0.9, "orange"],//81%-90%处的颜色
+                                    [1, "lightgreen"]//80%-100%处的颜色
+                                ],
+                                width: 15//表盘宽度
+                            }
+                        },
+                        splitLine: { //分割线样式（及10、20等长线样式）
+                            length: 15,
+                            lineStyle: { // 属性lineStyle控制线条样式
+                                width: 2
+                            }
+                        },
+                        axisTick: { //刻度线样式（及短线样式）
+                            length: 20,
+                            show: false
+                        },
+                        axisLabel: { //文字样式（及“10”、“20”等文字样式）
+                            color: "white",
+                            distance: -23, //文字离表盘的距离
+                            textStyle: {
+                                fontSize: 6
+                            }
+                        },
+                        pointer: { //指针样式
+                            length: '70%',
+                        },
+                        detail: {
+                            formatter: "{score|{value}%}",
+                            offsetCenter: [0, "40%"],
+                            height: 10,
+                            rich: {
+                                score: {
+                                    //color: "white",
+                                    //fontFamily: "Calibri",
+                                    fontSize: 18
+                                }
+                            }
+                        },
+                        data: [{
+                            value: iYield,
+                            label: {
+                                textStyle: {
+                                    fontSize: 12
+                                }
+                            }
+                        }]
+                    }
+                ]
+             };
+             option && myChart.setOption(option);
+             myChart.resize();
+         }
+        function showFullScreen() {
+
+            /*判断是否全屏*/
+            let isFullscreen = document.fullScreenElement//W3C
+                || document.msFullscreenElement //IE11
+                || document.mozFullScreenElement //火狐
+                || document.webkitFullscreenElement //谷歌
+                || false;
+
+            if (!isFullscreen) {
+                let el = document.documentElement;
+                if (el.requestFullscreen) {
+                    el.requestFullscreen();
+                } else if (el.mozRequestFullScreen) {
+                    el.mozRequestFullScreen();
+                } else if (el.webkitRequestFullscreen) {
+                    el.webkitRequestFullscreen();
+                } else if (el.msRequestFullscreen) {
+                    el.msRequestFullscreen();
+                }
+                $("#fullScreen").removeClass("fa-expand").addClass("fa-compress");
+            }
+            else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.webkitCancelFullScreen) {
+                    document.webkitCancelFullScreen();
+                }
+                $("#fullScreen").removeClass("fa-compress").addClass("fa-expand");
+            }
+        }
+        function setTarget(target) {
+                     $.ajax({
+                         type: 'post',
+                         dataType: 'json',
+                         data: {
+                             "target":target
+                         },
+                         url: '/Statistics/ACCBoxDashboard/SetUPD',
+                         success: function (retdata) {
+
+                            
+                         location.reload();
+
+
+                         },
+                         error: function () {
+
+                         }
+                     });
+
+        }
+
+
+
+    </script>
+
+    <div class="header">
+        <div class="logo"><img src="/images/Logo/Logo_W_SMDi4_400x65_简.png" /> </div>
+        <div class="title"><span>ACC-BOX Real-time Dashboard</span></div>
+        <a id="fullScreen" class="controlbox fa fa-expand" onclick="showFullScreen()"></a>
+    </div>
+
+
+    <div class="container-fluid accdata align-items-center">
+        <div class="row align-items-center panel">
+            <div class="col-2 panel-item">
+                <div class="">
+                    <h6 class="panel-title" style="padding-bottom: 1px;">Output Status</h6>
+                </div>
+                <div id="divCapacityStatus" style="width: 100%; height: 2rem;"></div>
+            </div>
+            <div class="col-2 panel-item">
+                <div class="">
+                    <h6 class="panel-title" style="padding-bottom: 1px;">Capacity Utilization</h6>
+                </div>
+                <div id="divOEE" style="width: 100%; height: 2rem;"></div>
+            </div>
+
+            <div class="col-2 panel-item">
+                <div class="">
+                    <h6 class="panel-title" style="padding-bottom: 1px;">Real-time Yield</h6>
+                </div>
+                <div id="divQualityRatio" style="width: 100%; height: 2rem;"></div>
+            </div>
+
+            <div class="col-6 selector">
+                <div class="row align-items-center">
+                    <div class="col-4">
+                        <select class="form-select eqselect" id="stationFilter" aria-label="eqselect">
+                        </select>
+                    </div>
+                    <div class="col-4">
+
+                        <input type="date" class="form-control dateselect" id="basic-url" aria-describedby="basic-addon3">
+
+                    </div>
+                    <div class="col-4">
+                        <button type="button" class="form-control btn-primary exportdata" id="liveToastBtn">Export AlarmData</button>
+                        <div class="toast-container position-absolute bottom-0 end-0 p-3">
+                            <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                                <div class="toast-header">
+
+                                    <strong class="me-auto">Notice</strong>
+                                    
+                                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                                </div>
+                                <div class="toast-body">
+                                    Downloading File, please wait a moment ;)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="row">
+                    <div class="col-4">
+                        <button type="button" class="form-control " id="status" onMouseOver="$(this).tooltip('show')" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-title="Another tooltip"> </button>
+                        @*<input type="text" class="form-control " id="status" style="color:white" disabled readonly>*@
+                    </div>
+                    <div class="col-4">
+                        <button type="button" class="form-control " id="yield" onMouseOver="$(this).tooltip('show')" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-title="Another tooltip"> </button>
+                    </div>
+                    <div class="col-4">
+                        <button type="button" class="form-control " id="fpy" onMouseOver="$(this).tooltip('show')" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-title="Another tooltip"> </button>
+                        @*<input type="text" class="form-control " id="fpy" disabled readonly>*@
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+        @*<form class="row selector" action="#">
+            <div class="col-2">
+            <select class="form-select eqselect form-select-lg" id="stationFilter" aria-label="eqselect">
+            </select>
+            </div>
+            <div class="col-2 input-group-lg">
+
+            <input type="date" class="form-control dateselect" id="basic-url" aria-describedby="basic-addon3">
+
+            </div>
+            <div class="col-1 input-group-lg">
+            <button type="button" class="form-control " id="status" onMouseOver="$(this).tooltip('show')" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-title="Another tooltip"> </button>
+            @*<input type="text" class="form-control " id="status" style="color:white" disabled readonly>
+            </div>
+            <div class="col-3 input-group-lg">
+            <input type="text" class="form-control " id="runrate" disabled readonly>
+            </div>
+            <div class="col-2 input-group-lg">
+            <button type="button" class="form-control " id="yield" onMouseOver="$(this).tooltip('show')" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-title="Another tooltip"> </button>
+            </div>
+            <div class="col-2 input-group-lg">
+            <button type="button" class="form-control " id="fpy" onMouseOver="$(this).tooltip('show')" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-title="Another tooltip"> </button>
+            <input type="text" class="form-control " id="fpy" disabled readonly>
+            </div>
+            <div class="col-2 input-group-lg">
+            <button type="button" class="form-control btn-primary exportdata">Export AlarmData</button>
+            </div>
+
+            </form>*@
+
+        <div class="row box">
+            <div class="col yield">
+                <div id="trendchart"></div>
+            </div>
+            <div class="col alarmtrend">
+                <div id="runratechart"></div>
+            </div>
+        </div>
+        <div class="row ">
+            <div class="col fpy">
+
+                <div id="fpychart"></div>
+            </div>
+            <div class="col alarmlist">
+                <div class=" row">
+                    <lable style="color:white; font-size:1rem" id="alarmduration"></lable>
+                </div>
+                <div class="">
+                    <table class="align-content-center alarmhist" id="alarmhist"> </table>
+                </div>
+
+
+
+
+
+            </div>
+        </div>
+
+    </div>
+
+
+    <div class="footer row">
+        <span class="copyright">Copyright©@DateTime.Now.Year SMD All rights reserved.智能制造开发中心 版权所有</span>
+    </div>
+</body>
+
+
+
+</html>

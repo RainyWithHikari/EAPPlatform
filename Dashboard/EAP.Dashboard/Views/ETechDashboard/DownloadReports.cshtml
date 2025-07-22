@@ -1,0 +1,107 @@
+﻿@{
+    ViewBag.Title = "下载报表";
+}
+<html>
+<head>
+    <link rel="stylesheet" href="~/Content/font-awesome/css/font-awesome.css">
+    <link rel="stylesheet" href="~/Content/font/iconfont.css">
+    <link rel="stylesheet" href="~/Content/bootstrap.min.css" />
+    <script type="text/javascript" src="~/Scripts/jquery-3.4.1.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/echartjs/dist/echarts.js"></script>
+
+    <link rel="shortcut icon" href="~/Scripts/favicon.ico" />
+    <link rel="stylesheet" href="~/Scripts/layui/css/layui.css" media="all">
+    <script type="text/javascript" src="~/Scripts/layui/layui.js"></script>
+
+</head>
+<body>
+    <div class="dashboard-container" style="padding:3%;">
+        <form class="layui-form" action="">
+            <div class="layui-form-item">
+                @*<label class="layui-form-label">日期</label>
+                    <div class="layui-input-block">
+                        <input id="dateFilter" type="text" name="date" required lay-verify="required" placeholder="请选择日期" autocomplete="off" class="layui-input">
+                    </div>*@
+
+                <label class="layui-form-label">Week</label>
+                <div class="layui-input-block">
+                    <select name = "week" lay-verify="required" id="weekFilter" lay-filter="weekFilter">
+                    </select>
+                </div>
+            </div>
+          
+
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn" lay-submit lay-filter="formDownload">下载报表</button>
+                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                </div>
+            </div>
+        </form>
+
+    </div>
+    <script>
+        layui.use(['jquery', 'form', 'laydate'], function () {
+            var laydate = layui.laydate
+                , form = layui.form
+                , $ = layui.jquery;
+            form.render();
+            form.render("select");
+
+            //执行一个laydate实例
+            laydate.render({
+                elem: '#dateFilter' //指定元素
+            });
+
+            //监听提交
+            form.on('submit(formDownload)', function (data) {
+                console.log(data.field)
+                //layer.msg(JSON.stringify(data.field));
+                //var originalObject = data.field
+                //var eqps = Object.keys(originalObject) // 获取对象的所有属性名
+                //    .filter(key => key.startsWith('EQID')) // 筛选出以EQID开头的属性名
+                //    .map(key => originalObject[key]); // 获取这些属性对应的值并存入新数组
+
+                var date = data.field.week;
+
+                layer.msg("报表下载中，请稍后……");
+                DownloadData(date)
+
+                return true;
+            });
+
+
+            function DownloadData(date) {
+
+                $.ajax({
+                    type: 'post',
+                    xhrFields: {
+                        responseType: 'blob' // 设置响应类型为二进制数据流
+                    },
+                    data: {
+                        "week": date,
+
+                    },
+                    url: 'DownloadReportData',
+                    success: function (data) {
+                        var blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                        var link = document.createElement('a');
+                        link.href = window.URL.createObjectURL(blob);
+                        link.download ="ETECH_"+ date + "_AlarmData.xlsx"; // 下载的文件名
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        layer.msg("下载完成！")
+                    },
+                    error: function (err) {
+                        layer.msg(err)
+                        console.log(err)
+                    }
+                });
+            }
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,61 @@
+﻿
+@model EAPPlatform.ViewModel._Admin.FrameworkUserVMs.FrameworkUserVM
+@using WalkingTec.Mvvm.Core.Extensions;
+@inject IStringLocalizer<Program> Localizer;
+
+<wt:form vm="@Model" url="/_Admin/FrameworkUser/Edit" >
+  <wt:tab >
+    <wt:tabheaders>
+      <wt:tabheader title="@Localizer["_Admin.BasicInfo"]"/>
+
+      <wt:tabheader title="@Localizer["Sys.ExtraInfo"]"/>
+
+    </wt:tabheaders>
+    <wt:tabcontents>
+      <wt:tabcontent>
+        <wt:row  items-per-row="ItemsPerRowEnum.Two">
+          <wt:textbox field="Entity.ITCode"/>
+          <wt:textbox field="Entity.Name"/>
+        </wt:row>
+        <wt:row  items-per-row="ItemsPerRowEnum.Two">
+          <wt:switch field="Entity.IsValid" default-value="true"/>
+          <wt:upload field="Entity.PhotoId" upload-type="ImageFile" thumb-width="128"/>
+        </wt:row>
+
+        <wt:row  items-per-row="ItemsPerRowEnum.One">
+          <wt:checkbox field="SelectedFrameworkRoleFrameworkUser_MT_WtmsIDs"  item-url="/_Admin/FrameworkUser/GetFrameworkRoles" label-text="@Localizer["_Admin.Role"]"/>
+        </wt:row>
+        <wt:row  items-per-row="ItemsPerRowEnum.One">
+          <wt:checkbox field="SelectedFrameworkGroupFrameworkUser_MT_WtmsIDs"  item-url="/_Admin/FrameworkUser/GetFrameworkGroups" label-text="@Localizer["_Admin.Group"]"/>
+        </wt:row>
+
+
+      </wt:tabcontent>
+      <wt:tabcontent>
+        <wt:row  items-per-row="ItemsPerRowEnum.Two">
+          <wt:textbox field="Entity.Email"/>
+          <wt:combobox field="Entity.Gender" empty-text="@Localizer["Sys.PleaseSelect"]" multi-select="false"/>
+        </wt:row>
+        <wt:row  items-per-row="ItemsPerRowEnum.Two">
+          <wt:textbox field="Entity.CellPhone"/>
+          <wt:textbox field="Entity.HomePhone"/>
+        </wt:row>
+        <wt:row  items-per-row="ItemsPerRowEnum.Two">
+          <wt:textbox field="Entity.Address"/>
+          <wt:textbox field="Entity.ZipCode"/>
+        </wt:row>
+
+
+      </wt:tabcontent>
+    </wt:tabcontents>
+  </wt:tab>
+
+  <wt:container align="AlignEnum.Right">
+    <wt:submitbutton  text="@Localizer["Sys.Submit"]"/>
+    <wt:closebutton  text="@Localizer["Sys.Close"]"/>
+  </wt:container>
+
+  <wt:hidden field="Entity.ID" />
+</wt:form>
+
+

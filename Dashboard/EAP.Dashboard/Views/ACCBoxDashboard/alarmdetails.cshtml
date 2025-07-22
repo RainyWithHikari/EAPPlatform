@@ -1,0 +1,1434 @@
+﻿@{
+    ViewBag.Title = "Alarm Details";
+
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="~/Content/etech_alarmDetails.css">
+    <link rel="stylesheet" href="~/Content/font-awesome/css/font-awesome.css">
+    <link rel="stylesheet" href="~/Content/font/iconfont.css">
+    <link rel="stylesheet" href="~/Content/bootstrap.min.css" />
+
+    <script src="~/Scripts/layui/layui.table.formdate.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery-3.4.1.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/echartjs/dist/echarts.js"></script>
+
+    <link rel="shortcut icon" href="~/Scripts/favicon.ico" />
+    <link rel="stylesheet" href="~/Scripts/layui/css/layui.css" media="all">
+    <script type="text/javascript" src="~/Scripts/layui/layui.js"></script>
+
+</head>
+
+
+<body>
+
+    <script>
+
+         layui.use(['carousel', 'form', 'slider', 'laydate', 'element'], function () {
+             //var carousel = layui.carousel
+
+             var  form = layui.form
+                 , laydate = layui.laydate
+                 , slider = layui.slider
+                 , element = layui.element,
+                 table = layui.table;
+             var c_option = {
+                 elem: '.carousel'
+                 , width: '100%' //设置容器宽度
+                , height: '100%'
+                 , arrow: 'always' //始终显示箭头
+                 , interval: 100000
+                 , indicator: 'outside'
+
+             }
+
+             var selectweek = $("#weekFilter option:selected").val();
+             var startdatetime = "@DateTime.Today.ToString("yyyy-MM-dd")";
+             var enddatetime = "@DateTime.Today.ToString("yyyy-MM-dd")";
+             var week;
+
+             $(".startdateselect").change(function(){
+                     startdatetime = $(this).val();
+
+                     //console.log("starttime:" + startdatetime);
+             });
+             $(".enddateselect").change(function(){
+                     enddatetime = $(this).val();
+
+                     //console.log("enddatetime:" + enddatetime);
+             });
+             $(".weekselect").change(function(){
+                     week = $(this).val();
+
+                     //console.log("week:" + week);
+             });
+             $("#recordstartend").click(function(){
+
+                 layer.open({
+                    title: '新增开线时间'
+                    , type: 2
+                    , btn: ['确定', '取消']
+                    , content: 'setWeek'
+                    , area: ['40%', '50%']
+                    , success: function (layero, index) {
+                        //向layer页面传值，传值主要代码
+                        //   var body = layer.getChildFrame('body', index);
+                        var body = layer.getChildFrame('body', index);
+                        //var select = document.getElementById("eqp");
+                        //var options = select.options;
+                        //var index = select.selectedIndex;
+                        body.find("[id='line']").val('ACC-BOX');
+                    }
+                    , yes: function (index) {
+                        var res = window["layui-layer-iframe" + index].callback();
+                        var data = JSON.parse(res);
+                        //console.log(data);
+                        if (data.start >= data.end) {
+                            layer.msg('错误：开线时间大于结束时间！');
+                        } else {
+                            //console.log(data);
+                            // layer.msg(res);
+                            //layer.msg('新增设备功能未开放');
+                            setStartEnd(data.start,data.end,data.idleduration);
+                            layer.close(index);
+                        }
+
+                     }, btn2: function (index, layero) {
+                            layer.msg('取消操作');
+                     }
+
+                });
+             });
+             $(".exportAlarm").click(function(){
+                 //console.log(week)
+                 layer.msg("报表下载中，请稍后……");
+                 ExportData(week);
+             })
+             $("#weekFilter").change(function(){
+                 selectweek = $(this)
+                    .find("option:selected")
+                    .text();
+
+
+
+             });
+
+
+
+             //getLatestAlarmRate();
+             GetHistoryAlarmRate();
+             GetStatus();
+             ChartssetInterval();
+
+             function getLatestAlarmRate(selectweek) {
+                     $.ajax({
+                         type: 'post',
+                         dataType: 'json',
+                         data: {
+                             "selectweek": selectweek,
+                             "eqpType": 'ACCBOX'
+                         },
+                         url: 'GetAlarmRate',
+                         success: function (retdata) {
+
+                             var eqdata = retdata.eqdata;
+                             var eqids = retdata.eqids;
+                             var alarmrates = retdata.alarmrates;
+                             var starttime = retdata.starttime;
+                             var endtime = retdata.endtime;
+                            var alarmtimes = retdata.alarmtimes;
+                            var duration = starttime +"~" + endtime;
+                            var maxtime = retdata.maxtime;
+                            var maxrate = retdata.maxrate;
+                             //gettrendchart('trendchart', alarmrates, eqdata, alarmtimes, duration, maxtime, maxrate);
+                             getAlarmTimeByStation('station-alarm-time', eqdata, alarmtimes, duration);
+                             getAlarmRateByStation('station-alarm-rate', alarmrates, eqdata, 5);
+                           console.log(eqids[0])
+                           getAlarmDetails(eqids[0],selectweek);
+                           week = selectweek;
+
+
+
+
+                         },
+                         error: function () {
+
+                         }
+                     });
+
+             }
+
+             function setStartEnd(starttime,endtime,idleduration) {
+                     $.ajax({
+                         type: 'post',
+                         dataType: 'json',
+                         data: {
+                             "starttime":starttime,
+                             "endtime":endtime,
+                             "idleduration": idleduration,
+                             "eqpType": 'ACCBOX'
+                         },
+                         url: 'SetStartEnd',
+                         success: function (retdata) {
+
+                             var eqdata = retdata.eqdata;
+                             var alarmrates = retdata.alarmrates;
+                             var starttime = retdata.starttime;
+                             var endtime = retdata.endtime;
+                            var alarmtimes = retdata.alarmtimes;
+                            var duration = starttime +"~" + endtime;
+                            var maxtime = retdata.maxtime;
+                            var maxrate = retdata.maxrate;
+                           gettrendchart('trendchart', alarmrates,eqdata,alarmtimes,duration,maxtime,maxrate);
+
+
+
+
+
+                         },
+                         error: function () {
+
+                         }
+                     });
+
+             }
+             function GetHistoryAlarmRate() {
+                     $.ajax({
+                         type: 'post',
+                         dataType: 'json',
+                         data: {
+                             "eqpType": 'ACCBOX'
+                         },
+                         url: 'GetHistoryAlarmRate',
+                         success: function (retdata) {
+
+                             var weekdata = retdata.weekdata;
+                             var totaltimes = retdata.totaltimes;
+                             var totalrates = retdata.totalrates;
+                             var maxtime = retdata.maxtime;
+                             var maxrate = retdata.maxrate;
+                             var target = retdata.target;
+                             gethistoryAlarmTime('weekly-total-alarm-time', totaltimes, weekdata, 'Weekly')
+                             gethistoryAlarmRate('weekly-total-alarm-rate', totalrates, weekdata, target)
+                             getLatestAlarmRate(weekdata[weekdata.length - 1]);
+                         },
+                         error: function () {
+
+                         }
+                     });
+
+             }
+             function GetStatus() {
+                     $.ajax({
+                         type: 'post',
+                         dataType: 'json',
+                         data: {
+
+                         },
+                         url: 'GetStatus',
+                         success: function (retdata) {
+                             var eqpProfile = retdata.eqpProfiles
+
+                             GenerateStatusCard(eqpProfile);
+                         },
+                         error: function () {
+
+                         }
+                     });
+
+             }
+
+             function GenerateStatusCard(eqpdata){
+                 var pagecount = eqpdata.length / 14;
+                 var pageText = '<div class="row">';
+                 for (var page = 0; page < pagecount; page++) {
+
+
+
+                    for (var cardnum = page * 14; cardnum < (page + 1) * 14 && cardnum < eqpdata.length; cardnum++) {
+                        var eqp = eqpdata[cardnum];
+                        var sysStateColorMap = new Map([['Unknown', 'form-control bg-secondary'], ['Idle', 'form-control bg-warning']
+                            , ['Run', 'form-control bg-success'], ['Alarm', 'form-control bg-danger']
+                        ]);
+
+                        var stateColor = sysStateColorMap.get(eqp.Status);
+                        var name = eqp.EQID;
+
+
+                        pageText //+= '<div class="col-2" style = "padding:0;height:10%">'
+                            //+ '<div class="box-status " style="height: 80%;  ">'
+                            //+= '<input type = "text" class="col-2 ' + stateColor + '" value = "'+name+'" style="border:none;color: white; font-size:0.85rem; text-align:center;height:10%;width:12%; margin:1%" readonly>'
+                             += '<div class="col ' + stateColor + '" style="border:none;color: white; font-size:1.2rem; text-align:center;height:auto;width:auto; margin:0.5%; margin-top:1.5%;margin-bottom:1.5%">' + eqp.EQID + '</div>'
+                            //+ '<div class="layui-card-body" style="opacity:1; height: 75% ">'
+                            //+ '<div style="color: white; font-size:1rem;">Output: ' + output + '</div>'
+                            //+ '<div style="color: white;font-size:1rem;">Yield: ' + yields + '</div>'
+                            //+'</div></div>';
+                    }
+                        pageText += ' </div>';
+                    }
+
+
+                    document.getElementById("statuscontent").innerHTML = pageText;
+             }
+             function ExportData(week) {
+                 var params = {"week":week}
+                 $.ajax({
+                     type: 'post',
+                     data: {
+
+                         "week": week
+
+                     },
+                     url: 'ExportAlarmDataByWeek',
+                     xhrFields: {
+                         responseType: 'blob' // 将响应数据类型设置为blob
+                     },
+                     success: function (data, status, xhr) {
+
+                         var blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                         var link = document.createElement('a');
+                         link.href = window.URL.createObjectURL(blob);
+                         link.download = "ACCBOX_" + week + "_" + "AlarmData.xlsx"; // 下载的文件名
+                         document.body.appendChild(link);
+                         link.click();
+                         document.body.removeChild(link);
+                         layer.msg("下载完成！")
+                     },
+                     error: function (err) {
+                         console.log(err)
+                     }
+                 });
+
+             }
+             function getAlarmDetails(EQID,week){
+                     $.ajax({
+                         type: 'post',
+                         dataType: 'json',
+                         data: {
+                             "EQID":EQID,
+                             "week": week,
+                             "eqpType":"ACCBOX"
+                         },
+                         url: 'GetAlarmDetails',
+                         success: function (retdata) {
+                           //alert(retdata.result);
+                           var alarmlist = retdata.alarmList;
+                           var alarmall = retdata.alarmtotal.totalalarmtime;
+                           var codelist = retdata.alarmtotal.totalcodelist;
+                           var textlist = retdata.alarmtotal.totalcodetext;
+                           var alarmpie = retdata.alarmtotal.totalalarmpie;
+                           //console.log(codelist);
+                           getcodechart('codechart',alarmall,codelist,textlist,'bar',week,EQID);
+                           getcodepie('codepie',alarmpie,codelist,textlist,'pie');
+                         },
+                         error: function () {
+                            alert("error!");
+                         }
+                     });
+             }
+
+
+             function ChartssetInterval() {
+                //每1分钟刷新一次界面
+                setInterval(function () {
+                    GetStatus();
+                }, 30000);
+             }
+
+             function gettrendchart(id, trendYield,trenddates,alarmtimes,duration,maxtime,maxrate) {
+                var chartDom = document.getElementById(id);
+                var myChart = echarts.init(chartDom);
+                //var maxtimes = (double) maxtime;
+                $(window).on('resize', function () {//
+                 //屏幕大小自适应，重置容器高宽
+                    chartDom.style.width = window.innerWidth * 0.6 + 'px';
+                    chartDom.style.height = window.innerHeight * 0.4 + 'px';
+                    myChart.resize();
+                });
+                chartDom.style.width = window.innerWidth * 0.6 + 'px';
+                chartDom.style.height = window.innerHeight * 0.4 + 'px';
+
+                var option;
+
+                option = {
+                    title: {
+
+                        text: duration,
+                        textStyle:{
+                            color:"#fff"
+                        }
+                    },
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            type: 'cross'
+                        }
+                    },
+                    legend: {
+                        data: ['Rate','Time'],
+                        textStyle:{
+                            color:"#fff"
+                        }
+                    },
+                    grid: {
+
+                    },
+                    xAxis: {
+                        type: 'category',
+                        axisTick: {
+                            alignWithLabel: true
+                        },
+                        data: trenddates,
+                        axisLine: {
+                            lineStyle: {
+                               color: "#fff",
+                            }
+                        }
+                   },
+                   yAxis: [
+                       {
+                           type: 'value',
+                           name: 'Rate',
+                           position: 'left',
+                           min: 0,
+                           max: maxrate,
+                           splitLine: {     //网格线
+                               show: true,
+                               lineStyle: {
+                                  color: '#22376d'
+                               }
+                           },
+                           axisLine: {
+                               lineStyle: {
+                                  color: "#fff",
+                               }
+                           },
+                           axisLabel: {
+                               formatter: '{value} %'
+                           }
+                       },
+                       {
+                           type: 'value',
+                           name: 'Time',
+                           position: 'right',
+                           min: 0,
+                           max: maxtime,
+                           splitLine: {     //网格线
+                               show: false,
+                               lineStyle: {
+                                  color: '#22376d'
+                               }
+                           },
+                           axisLine: {
+                               lineStyle: {
+                                  color: "#fff",
+                               }
+                           },
+                           axisLabel: {
+                               formatter: '{value} min'
+                           }
+                     }
+                     ],
+                   series: [
+                     {
+                         name: 'Rate',
+                         type: 'line',
+                         data: trendYield,
+                         label: {
+                             show: true,
+                             position: 'top',
+                             color:'white',
+                             formatter: '{c} %'
+                         },
+                         lineStyle:{
+                             color:'yellow'
+                         }
+
+                     },
+                     {
+                         name: 'Time',
+                         type: 'bar',
+                         yAxisIndex: 1,
+                         data: alarmtimes,
+                         label: {
+                             show: true,
+                             position: 'top',
+                             color:'white',
+                             formatter: '{c} min'
+                         },
+                         lineStyle:{
+                             color:'yellow'
+                         }
+                     }
+
+                    ]
+                };
+                option && myChart.setOption(option);
+                myChart.resize();
+                myChart.on('click',function(param){
+                    var stationID
+                    if(param.name == 'FCT1'){
+                        stationID='FCT101'
+                        getAlarmDetails(stationID,week);
+                    }
+                    if(param.name == 'FCT2'){
+                        stationID='FCT201'
+                        getAlarmDetails(stationID,week);
+                    }
+                    else{
+                        getAlarmDetails(param.name,week);
+                    }
+                    /* old method
+                    var url = '/Statistics/ACCboxDashboard/alarmdetails?EQID='+param.name+'&week='+week;
+
+                    layui.use([], function () {
+
+                        layer.open({
+                            title: 'Alarm Details'
+                            , type: 2
+                            , btn: ['确定']
+                            , content: url //'/Dashboard/BoxDetails'
+                            , area: ['90%', '90%']
+                            , id:'layer_alarmlist'
+                            , success: function (layero, index) {
+                                ////向layer页面传值，传值主要代码
+                                var body = layer.getChildFrame('body', index);
+                                body.find("[id='week']").val(week);
+                                body.find("[id='equipment']").val(param.name);
+                                //body.find("[id='datepicker']").val($("#datepicker").val());
+                            }
+                            , yes: function (index) {
+                                layer.close(index);
+                            }
+
+                        });
+
+                    });
+                    */
+                })
+
+             }
+
+             function getAlarmTimeByStation(id, trenddates, alarmtimes, duration) {
+
+                 var chartDom = document.getElementById(id);
+                 $(window).on('resize', function () {//
+                     //屏幕大小自适应，重置容器高宽
+                     chartDom.style.width = chartDom.getBoundingClientRect().width;
+                     chartDom.style.height = chartDom.getBoundingClientRect().height;
+                     myChart.resize();
+                 });
+                 chartDom.style.width = chartDom.getBoundingClientRect().width;
+                 chartDom.style.height = chartDom.getBoundingClientRect().height;
+
+                 var myChart = echarts.init(chartDom, 'dark');
+                 var option;
+
+
+                 option = {
+                     title: {
+
+                         text: "Station Alarm Times - " + duration,
+                         textStyle: {
+                             color: 'white',
+                             fontSize: 18
+                         }
+                     },
+                     tooltip: {
+                         trigger: 'axis',
+                         axisPointer: {
+                             type: 'cross'
+                         }
+                     },
+                     axisPointer: {
+                         link: { xAxisIndex: 'all' },
+                         label: {
+                             backgroundColor: '#777'
+                         }
+                     },
+                     legend: {
+                         left: 'right',
+                         top: '3%',
+                         textStyle: {
+                             color: "#fff"
+                         }
+                     },
+                     grid: {
+
+                     },
+                     xAxis: {
+                         type: 'category',
+                         axisTick: {
+                             alignWithLabel: true
+                         },
+                         data: trenddates,
+                         axisLine: {
+                             lineStyle: {
+                                 color: "#fff",
+                             }
+                         },
+                         axisLabel: {
+                             rotate: 25
+                         }
+                     },
+                     yAxis: [
+                         {
+                             type: 'value',
+                             name: 'Time(min)',
+                             position: 'left',
+                             min: 0,
+                             max: function (value) { return Math.ceil(value.max) * 1.2 },
+                             splitLine: {     //网格线
+                                 show: false,
+                                 lineStyle: {
+                                     color: '#22376d'
+                                 }
+                             },
+                             axisLine: {
+                                 lineStyle: {
+                                     color: "#fff",
+                                 }
+                             },
+                             axisLabel: {
+                                 formatter: '{value}'
+                             }
+                         }],
+                     series: [
+
+                         {
+                             name: 'Time',
+                             type: 'bar',
+
+                             data: alarmtimes,
+                             label: {
+                                 show: true,
+                                 position: 'top',
+                                 color: 'white',
+                                 formatter: '{c} min'
+                             },
+                             lineStyle: {
+                                 color: 'yellow'
+                             },
+                             z: 1
+                         }
+
+                     ]
+                 };
+                 option && myChart.setOption(option);
+                 myChart.resize();
+                 myChart.on('click', function (param) {
+                     var stationID
+                     if (param.name == 'FCT1') {
+                         stationID = 'FCT101'
+                         getAlarmDetails(stationID, week);
+                     }
+                     if (param.name == 'FCT2') {
+                         stationID = 'FCT201'
+                         getAlarmDetails(stationID, week);
+                     }
+                     else {
+                         getAlarmDetails(param.name, week);
+                     }
+
+                 })
+
+             }
+             function getAlarmRateByStation(id, rateData, trenddates, alarmtarget) {
+                 var chartDom = document.getElementById(id);
+                 $(window).on('resize', function () {//
+                     //屏幕大小自适应，重置容器高宽
+                     chartDom.style.width = chartDom.getBoundingClientRect().width;
+                     chartDom.style.height = chartDom.getBoundingClientRect().height;
+                     myChart.resize();
+                 });
+                 chartDom.style.width = chartDom.getBoundingClientRect().width;
+                 chartDom.style.height = chartDom.getBoundingClientRect().height;
+
+                 var myChart = echarts.init(chartDom, 'dark');
+
+                 var option;
+
+                 option = {
+                     title: {
+                         text: "Station Alarm Rate",
+                         textStyle: {
+                             color: "#fff"
+                         }
+                     },
+                     tooltip: {
+                         trigger: 'axis',
+                         axisPointer: {
+                             type: 'cross'
+                         },
+                         extraCssText: 'width:auto;height:auto'
+                     },
+                     axisPointer: {
+                         link: { xAxisIndex: 'all' },
+                         label: {
+                             backgroundColor: '#777'
+                         }
+                     },
+                     legend: {
+                         left: 'right',
+                         top: '3%',
+                         textStyle: {
+                             color: "#fff"
+                         }
+                     },
+                     grid: {},
+                     xAxis: {
+                         type: 'category',
+                         axisTick: {
+                             alignWithLabel: true
+                         },
+                         data: trenddates,
+                         axisLine: {
+                             lineStyle: {
+                                 color: "#fff",
+                             }
+                         },
+                         axisLabel: {
+                             rotate: 25,
+                             fontSize: 15,
+                         }
+                     },
+                     yAxis: [
+                         {
+                             type: 'value',
+                             name: 'Rate',
+                             position: 'left',
+                             min: 0,
+                             max: function (value) {
+                                 return Math.ceil(value.max * 1.5)
+                             },
+                             splitLine: {     //网格线
+                                 show: false,
+                                 lineStyle: {
+                                     color: '#22376d'
+                                 }
+                             },
+                             axisLine: {
+                                 lineStyle: {
+                                     color: "#fff",
+                                 }
+                             },
+                             axisLabel: {
+                                 formatter: '{value} %',
+                                 fontSize: 15,
+                             }
+                         }],
+                     series: [
+                         {
+                             name: 'Rate',
+                             type: 'line',
+                             data: rateData,
+                             areaStyle: {
+                                 color: '#BC8F8F',//'#339933',
+                             },
+                             smooth: true,
+                             label: {
+                                 show: true,
+                                 position: 'top',
+                                 color: 'white',
+                                 formatter: function (params) {
+                                     return parseFloat(params.value).toFixed(2) + '%'
+                                 }
+                             },
+                             lineStyle: {
+                                 color: 'yellow'
+                             },
+                             //markLine: {
+                             //    silent: true,
+                             //    itemStyle: {
+                             //        normal: {
+                             //            color: '#FA8565',
+                             //        }
+                             //    },
+                             //    data: [{
+                             //        yAxis: alarmtarget,
+                             //        label: {
+                             //            color: 'white',
+                             //            formatter: function (params) {
+                             //                return parseFloat(params.value).toFixed(0) + '%'
+                             //            }
+                             //        }
+                             //    }]
+                             //}
+                         }
+                     ]
+                 };
+                 option && myChart.setOption(option);
+                 myChart.resize();
+                 myChart.on('click', function (param) {
+                     //console.log(param.name);
+
+                     getLatestAlarmRate(param.name);
+                     week = param.name;
+                     //getStatusDetails(week);
+                 })
+
+             }
+             function gethistoryAlarmRate(id, rateData, trenddates, alarmtarget) {
+                 var chartDom = document.getElementById(id);
+                 $(window).on('resize', function () {//
+                     //屏幕大小自适应，重置容器高宽
+                     chartDom.style.width = chartDom.getBoundingClientRect().width;
+                     chartDom.style.height = chartDom.getBoundingClientRect().height;
+                     myChart.resize();
+                 });
+                 chartDom.style.width = chartDom.getBoundingClientRect().width;
+                 chartDom.style.height = chartDom.getBoundingClientRect().height;
+                 //console.log(chartDom.style.width)
+                 //console.log(chartDom.style.height)
+                 var myChart = echarts.init(chartDom, 'dark');
+
+                 var option;
+
+                 option = {
+                     title: {
+                         text: "Weekly Alarm Rate",
+                         textStyle: {
+                             color: "#fff"
+                         }
+                     },
+                     tooltip: {
+                         trigger: 'axis',
+                         axisPointer: {
+                             type: 'cross'
+                         },
+                         extraCssText: 'width:auto;height:auto'
+                     },
+                     axisPointer: {
+                         link: { xAxisIndex: 'all' },
+                         label: {
+                             backgroundColor: '#777'
+                         }
+                     },
+                     legend: {
+                         left: 'right',
+                         top: '3%',
+                         textStyle: {
+                             color: "#fff"
+                         }
+                     },
+                     grid: {},
+                     xAxis: {
+                         type: 'category',
+                         axisTick: {
+                             alignWithLabel: true
+                         },
+                         data: trenddates,
+                         axisLine: {
+                             lineStyle: {
+                                 color: "#fff",
+                             }
+                         },
+                         axisLabel: {
+                             rotate: 25,
+                             fontSize: 15,
+                         }
+                     },
+                     yAxis: [
+                         {
+                             type: 'value',
+                             name: 'Rate',
+                             position: 'left',
+                             min: 0,
+                             max: function (value) {
+                                 if (value.max < alarmtarget) { return Math.ceil(alarmtarget * 1.5) } else {
+                                     return Math.ceil(value.max * 1.5)
+                                 }
+                             },
+                             splitLine: {     //网格线
+                                 show: false,
+                                 lineStyle: {
+                                     color: '#22376d'
+                                 }
+                             },
+                             axisLine: {
+                                 lineStyle: {
+                                     color: "#fff",
+                                 }
+                             },
+                             axisLabel: {
+                                 formatter: '{value} %',
+                                 fontSize: 15,
+                             }
+                         }],
+                     series: [
+                         {
+                             name: 'Rate',
+                             type: 'line',
+                             data: rateData,
+                             areaStyle: {
+                                 color: '#BC8F8F',//'#339933',
+                             },
+                             smooth: true,
+                             label: {
+                                 show: true,
+                                 position: 'top',
+                                 color: 'white',
+                                 formatter: function (params) {
+                                     return parseFloat(params.value).toFixed(2) + '%'
+                                 }
+                             },
+                             lineStyle: {
+                                 color: 'yellow'
+                             },
+                             markLine: {
+                                 silent: true,
+                                 itemStyle: {
+                                     normal: {
+                                         color: '#FA8565',
+                                     }
+                                 },
+                                 data: [{
+                                     yAxis: alarmtarget,
+                                     label: {
+                                         color: 'white',
+                                         formatter: function (params) {
+                                             return parseFloat(params.value).toFixed(0) + '%'
+                                         }
+                                     }
+                                 }]
+                             }
+                         }
+                     ]
+                 };
+                 option && myChart.setOption(option);
+                 myChart.resize();
+                 myChart.on('click', function (param) {
+                     //console.log(param.name);
+
+                     getLatestAlarmRate(param.name);
+                     week = param.name;
+                     //getStatusDetails(week);
+                 })
+
+             }
+             function gethistoryAlarmTime(id, timeData, weekData, time) {
+                 var chartDom = document.getElementById(id);
+                 $(window).on('resize', function () {//
+                     //屏幕大小自适应，重置容器高宽
+                     chartDom.style.width = chartDom.getBoundingClientRect().width;
+                     chartDom.style.height = chartDom.getBoundingClientRect().height;
+                     myChart.resize();
+                 });
+                 chartDom.style.width = chartDom.getBoundingClientRect().width;
+                 chartDom.style.height = chartDom.getBoundingClientRect().height;
+                 //console.log(chartDom.style.width)
+                 //console.log(chartDom.style.height)
+                 var myChart = echarts.init(chartDom, 'dark');
+                 var option;
+
+                 option = {
+                     title: {
+                         text: "Weekly Alarm Time",
+                         textStyle: {
+                             color: "#fff"
+                         }
+                     },
+
+                     tooltip: {
+                         trigger: 'axis',
+                         axisPointer: {
+                             type: 'shadow'
+                         }
+                     },
+                     axisPointer: {
+                         link: { xAxisIndex: 'all' },
+                         label: {
+                             backgroundColor: '#777'
+                         }
+                     },
+                     legend: {
+                         //data: ['Time'],
+                         left: 'right',
+                         textStyle: {
+                             color: "#fff"
+                         }
+                     },
+                     grid: {
+                         //left: '12%',
+                         //top: '24%',
+                         //height: '60%'
+                     },
+                     xAxis: {
+                         type: 'category',
+                         axisTick: {
+                             alignWithLabel: true
+                         },
+                         data: weekData,
+                         axisLine: {
+                             lineStyle: {
+                                 color: "#fff",
+                             }
+                         },
+                         axisLabel: {
+                             rotate: 25,
+                             fontSize: 15,
+                         }
+                     },
+                     yAxis: [
+                         {
+                             type: 'value',
+                             name: 'Time(min)',
+                             position: 'left',
+                             min: 0,
+                             max: function (value) { return Math.ceil(value.max) * 1.2 },
+                             splitLine: {     //网格线
+                                 show: false,
+                                 lineStyle: {
+                                     color: '#22376d'
+                                 }
+                             },
+                             axisLine: {
+                                 lineStyle: {
+                                     color: "#fff",
+                                 }
+                             },
+                             axisLabel: {
+                                 formatter: '{value}'
+                             }
+                         }],
+                     series: [
+
+                         {
+                             name: 'Alarm',
+                             type: 'bar',
+                             barHeight: '100%',
+                             stack: 'total',
+                             emphasis: {
+                                 focus: 'series'
+                             },
+                             data: timeData,
+                             itemStyle: {
+                                 color: 'rgba(238, 232, 170, 1)',
+                             },
+                             label: {
+                                 show: true,
+                                 rotate: 25,
+                                 position: 'top',
+                                 align: 'left',
+                                 color: 'white',
+                                 formatter: function (params) {
+
+                                     return parseFloat(params.value).toFixed(1)
+
+                                 }
+                             }
+
+                         }
+
+                     ]
+                 };
+                 option && myChart.setOption(option);
+                 myChart.resize();
+                 myChart.on('click', function (param) {
+                     //console.log(param.name);
+
+                     getLatestAlarmRate(param.name);
+                     window.week = param.name;
+                     //getStatusDetails(week);
+                 })
+
+
+             }
+            function getcodepie(id, alarmall,codelist,textlist,type) {
+                //console.log(alarmall);
+                var alarmArr = Object.entries(alarmall);
+                //console.log(alarmArr);
+                var chartDom = document.getElementById(id);
+                $(window).on('resize', function () {//
+                    //屏幕大小自适应，重置容器高宽
+                    chartDom.style.width = chartDom.getBoundingClientRect().width;
+                    chartDom.style.height = chartDom.getBoundingClientRect().height;
+                    myChart.resize();
+                });
+                chartDom.style.width = chartDom.getBoundingClientRect().width;
+                chartDom.style.height = chartDom.getBoundingClientRect().height;
+
+                var myChart = echarts.init(chartDom, 'dark');
+
+                var option;
+
+                option = {
+                    title: {
+
+                        text: 'Alarm Ratio',
+                        textStyle:{
+                            color:"#fff"
+                        }
+                    },
+                    tooltip: {
+                        trigger: 'item',
+                        triggerOn:'mousemove',
+
+                        formatter:function(param){
+                            var codetext = '';
+                                 //int i
+                        for(var i = 0;i < textlist.length;i++){
+                            var item = textlist[i].AlarmCode;
+                            if(item == param.name) codetext = textlist[i].AlarmText;
+                        }
+                        return codetext;
+                        }
+                    },
+                    legend: {
+                        data: ['Rate','Time'],
+                        textStyle:{
+                            color:"#fff"
+                        }
+                    },
+                    grid: {
+
+                    },
+                   series: [
+
+                     {
+                         name: 'Code',
+                         type: type,
+
+                         data: alarmall,
+                         label: {
+                             show: true,
+                             formatter: '{b}({d}%)',
+                             color:'white'
+
+                         },
+                         labelLine: {
+                                length: 3,
+                                normal: {
+                                    lineStyle: {
+                                        color: 'rgba(255, 255, 255, 0.3)'
+                                    },
+                                    smooth: 0.2,
+                                    size:30
+                                    //length: this.standSize / 50,
+                                    //length2: this.standSize / 100,
+                                }
+                            }
+                     }
+
+                    ]
+                };
+                option && myChart.setOption(option);
+                myChart.resize();
+                myChart.on('on',function(param){
+                    //getAlarmDetails(param.name,week);
+                    //var codetext = '';
+                                 //int i
+                        //for(var i = 0;i < textlist.length;i++){
+                            //var item = textlist[i].AlarmCode;
+                            //if(item == param.name) codetext = textlist[i].AlarmText;
+                       // }
+                       // return codetext;
+                    //for(interval i = 0;i<=)
+
+                })
+
+            }
+            function getcodechart(id, alarmall,codelist,textlist,type,week,EQID) {
+                var chartDom = document.getElementById(id);
+                $(window).on('resize', function () {//
+                    //屏幕大小自适应，重置容器高宽
+                    chartDom.style.width = chartDom.getBoundingClientRect().width;
+                    chartDom.style.height = chartDom.getBoundingClientRect().height;
+                    myChart.resize();
+                });
+                chartDom.style.width = chartDom.getBoundingClientRect().width;
+                chartDom.style.height = chartDom.getBoundingClientRect().height;
+
+                var myChart = echarts.init(chartDom, 'dark');
+                //var myChart = echarts.init(chartDom);
+                //console.log(alarmall);
+                var maxTime = parseFloat(alarmall[0]);
+                for(var i = 0; i < alarmall.length ; i++){
+
+                    if(parseFloat(alarmall[i])>maxTime) maxTime = parseFloat(alarmall[i]);
+                }
+
+
+
+                var option;
+
+                option = {
+                    title: {
+
+                        text: week + "-"+EQID,
+                        textStyle:{
+                            color:"#fff"
+                        }
+                    },
+                    tooltip: {
+                        trigger: 'item',
+                        triggerOn:'mousemove',
+                        axisPointer: {
+                            type: 'cross'
+                        },
+                        formatter:function(param){
+                            var codetext = '';
+                                 //int i
+                        for(var i = 0;i < textlist.length;i++){
+                            var item = textlist[i].AlarmCode;
+                            if(item == param.name) codetext = textlist[i].AlarmText;
+                        }
+                        return codetext;
+                        }
+                    },
+                    legend: {
+                        data: ['Rate','Time'],
+                        textStyle:{
+                            color:"#fff"
+                        }
+                    },
+                    grid: {
+
+                    },
+                    xAxis: {
+                        type: 'category',
+                        axisTick: {
+                            alignWithLabel: true
+                        },
+                        data: codelist,
+                        axisLine: {
+                            lineStyle: {
+                               color: "#fff",
+                            }
+                        }
+                   },
+                   yAxis: [
+                       {
+
+                       },
+                       {
+                           type: 'value',
+                           name: 'Time',
+                           position: 'left',
+                           min: 0,
+                           max: Math.round(maxTime),
+                           splitLine: {     //网格线
+                               show: true,
+                               lineStyle: {
+                                  color: '#22376d'
+                               }
+                           },
+                           axisLine: {
+                               lineStyle: {
+                                  color: "#fff",
+                               }
+                           },
+                           axisLabel: {
+                               formatter: '{value} min'
+                           }
+                     }
+                     ],
+                   series: [
+
+                     {
+                         name: 'Time',
+                         type: type,
+                         yAxisIndex: 1,
+                         data: alarmall,
+                         label: {
+                             show: true,
+                             position: 'top',
+                             color:'white',
+                             formatter: function (param) {
+
+
+                    }
+                         },
+                         lineStyle:{
+                             color:'yellow'
+                         }
+                     }
+
+                    ]
+                };
+                option && myChart.setOption(option);
+                myChart.resize();
+                myChart.on('on',function(param){
+                    //getAlarmDetails(param.name,week);
+                    var codetext = '';
+                                 //int i
+                        for(var i = 0;i < textlist.length;i++){
+                            var item = textlist[i].AlarmCode;
+                            if(item == param.name) codetext = textlist[i].AlarmText;
+                        }
+                        return codetext;
+                    //for(interval i = 0;i<=)
+
+                })
+
+            }
+
+         })
+
+
+
+
+
+        function showFullScreen() {
+
+            /*判断是否全屏*/
+            let isFullscreen = document.fullScreenElement//W3C
+                || document.msFullscreenElement //IE11
+                || document.mozFullScreenElement //火狐
+                || document.webkitFullscreenElement //谷歌
+                || false;
+
+            if (!isFullscreen) {
+                let el = document.documentElement;
+                if (el.requestFullscreen) {
+                    el.requestFullscreen();
+                } else if (el.mozRequestFullScreen) {
+                    el.mozRequestFullScreen();
+                } else if (el.webkitRequestFullscreen) {
+                    el.webkitRequestFullscreen();
+                } else if (el.msRequestFullscreen) {
+                    el.msRequestFullscreen();
+                }
+                $("#fullScreen").removeClass("fa-expand").addClass("fa-compress");
+            }
+            else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.webkitCancelFullScreen) {
+                    document.webkitCancelFullScreen();
+                }
+                $("#fullScreen").removeClass("fa-compress").addClass("fa-expand");
+            }
+        }
+
+        var t = null;
+        t = setTimeout(time, 1000);
+        function time() {
+            clearTimeout(t);
+            dt = new Date();
+            var y = dt.getFullYear();
+            var mt = dt.getMonth() + 1;
+            var day = dt.getDate();
+            var h = dt.getHours();
+            var m = dt.getMinutes();
+            var s = dt.getSeconds();
+            document.getElementById("showTime").innerHTML = y + "年" + mt + "月" + day + "日 -" + h + "时" + m + "分" + s + "秒";
+            t = setTimeout(time, 1000);
+        }
+
+
+    </script>
+    <div class="dashboard-container">
+        <div class="item bi-1 row" id="dashboard-title">
+            <div class='col-2 logo'><img src="~/Content/Pictures/logo/Logo_W_SMDi4_400x65_简.png" /> </div>
+            <h1 class='col-8' id="title">Alarm Details · ACCBOX</h1>
+
+            <div class="col-2">
+
+                @*<button class="btn btn-primary" type="button" onclick="showFullScreen()">
+                        Full Screen
+                    </button>*@
+
+                <div class="col-12" style="margin-top: 10px; display: flex; justify-content: flex-end;">
+                    @*<h6 class='row' id="LN" ></h6>*@
+                    @*<h6 class='row' id="PN"></h6>*@
+
+                    <form class="layui-form-item row" action="">
+
+                        <div class="input-group">
+                            <button class="form-control btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                维护生产信息
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item exportAlarm" href="#">导出报警信息</a></li>
+                                <li><a class="dropdown-item" id="recordstartend" href="#">添加开线时间</a></li>
+                                @*<li><a class="dropdown-item" id="updateAlarmTarget" href="#">更新机故目标</a></li>*@
+                            </ul>
+
+
+                            <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="true">
+                                Tools
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-dark">
+                                <!--<li>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckChecked">-->
+                                @*checked*@
+                                <!--<label class="form-check-label" for="flexSwitchCheckChecked">轮播开关</label>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="input-group border-0">
+                                        <label class="input-group-text bg-dark text-light border-dark">轮播频率</label>
+                                        <input type="text" class="form-control bg-dark text-light border-dark" id="interval" placeholder="30" aria-label="30s" aria-describedby="basic-addon1" style="width:60px;">
+                                        <label class="input-group-text bg-dark text-light border-dark">s</label>
+                                    </div>
+                                </li>-->
+
+                                <li><a class="dropdown-item" onclick="showFullScreen()">Full Screen</a></li>
+
+
+
+                            </ul>
+                        </div>
+                        @*<div class="input-group input-group-sm mb-sm-1">
+                                    <label class="input-group-text ">Line</label>
+
+                                    <select class="form-select " name="modules" lay-verify="required" lay-search="" id="lineFilter" lay-filter="lineFilter">
+                                    </select>
+                            </div>*@
+
+
+
+
+                    </form>
+
+                    @*<span class="row" id="PN"></span>*@
+                </div>
+
+
+            </div>
+        </div>
+        <div class="item bi-2 row">
+
+            <div class="col-12 row" id="statuscontent">
+            </div>
+
+
+        </div>
+        <div class="item bi-3" id="weekly-total-alarm-time">
+
+        </div>
+        <div class="item bi-4" id="station-alarm-time">
+
+        </div>
+        <div class="item bi-5" id="station-alarm-rate">
+
+        </div>
+        <div class="item bi-6" id="weekly-total-alarm-rate">
+
+        </div>
+        <div class="item bi-7" id="codechart">
+
+        </div>
+        <div class="item bi-8" id="codepie">
+
+        </div>
+        <div class="item bi-9 row" id="footer">
+            <div class="col-2" id="watermark">@*Dashboard Designer: rainy_xu@usiglobal.com*@</div>
+            <span class="copyright col-8">Copyright © @DateTime.Now.Year SMDC All rights reserved. 智能制造开发中心 版权所有</span>
+            <span class="col-2" id="showTime"></span>
+        </div>
+
+
+</body>
+
+
+
+</html>

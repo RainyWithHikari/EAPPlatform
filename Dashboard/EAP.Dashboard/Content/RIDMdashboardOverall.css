@@ -1,0 +1,211 @@
+﻿body {
+}
+/* 使鼠标悬浮时变成手形光标 */
+.clickable-div {
+    cursor: pointer;
+}
+.row, .col {
+    --bs-gutter-x: 0 rem !important;
+    margin: 0;
+    position: inherit;
+}
+
+.dashboard-container {
+    color: white;
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #000d4a url('Pictures/dashboard/bg.jpg') center top;
+    background-size: cover;
+    display: grid;
+    /*grid-template-rows: 50px 0.5fr 1fr 1fr 1fr 1fr;*/
+    /*grid-template-rows: 8% 7% 18% 18% 23% 23% 3%;*/
+    grid-template-rows: 11% 4% 27% 27% 27% 4%;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+}
+
+.item {
+    text-align: center;
+    border-left: 2px solid #0F2D55;
+    border-right: 2px solid #0F2D55;
+    /*font-weight: bold;*/
+}
+
+    .item:nth-child(1) {
+        background: url('Pictures/dashboard/head_bg.png') no-repeat center center;
+        background-size: 100% 100%;
+        position: inherit;
+        grid-row: 1 / 2;
+        grid-column: 1 / 6;
+    }
+
+    .item:nth-child(2) {
+        /* x号机：历史七天合盘明细（柱状图）*/
+        /* background: rgba(0, 0, 0, 0.3);*/
+        background: #000d4a;
+        grid-row: 2 / 3;
+        grid-column: 1 / 2;
+    }
+
+    .item:nth-child(3) {
+        /* x号机：机种，料号，工单*/
+        background: #000d4a;
+        grid-row: 2 / 3;
+        grid-column: 2 / 3;
+    }
+
+    .item:nth-child(4) {
+        /*x号机：利用率*/
+        /* background: rgba(0, 0, 0, 0.3);*/
+        background: #000d4a;
+        grid-row: 2 / 3;
+        grid-column: 3 / 4;
+    }
+
+    .item:nth-child(5) {
+        /*  x号机：合盘饼图*/
+        /*background: #000826;*/
+        /*background: rgba(0, 0, 0, 0.3);*/
+        background: #000d4a;
+        grid-row: 2 / 3;
+        grid-column: 4 / 5;
+    }
+    .item:nth-child(6) {
+        /*  x号机：合盘饼图*/
+        /*  background: #000826;*/
+        /*background: rgba(0, 0, 0, 0.3);*/
+        grid-row: 2 / 3;
+        grid-column: 5 / 6;
+    }
+
+
+    .item:nth-child(7) {
+        /*  x号机：合盘饼图*/
+        /*  background: #000826;*/
+        /*background: rgba(0, 0, 0, 0.3);*/
+        grid-row: 3 / 4;
+        grid-column: 1 / 2;
+    }
+
+    .item:nth-child(8) {
+        grid-row: 3 / 4;
+        grid-column: 2 / 3;
+    }
+
+    .item:nth-child(9) {
+        grid-row: 3 / 4;
+        grid-column: 3 / 4;
+    }
+
+    .item:nth-child(10) {
+        grid-row: 3 / 4;
+        grid-column: 4 / 5;
+    }
+
+    .item:nth-child(11) {
+        grid-row: 3 / 4;
+        grid-column: 5 / 6;
+    }
+
+    .item:nth-child(12) {
+        grid-row: 4 / 5;
+        grid-column: 1 / 2;
+    }
+
+    .item:nth-child(13) {
+        grid-row: 4 / 5;
+        grid-column: 2 / 3;
+    }
+
+    .item:nth-child(14) {
+        grid-row: 4 / 5;
+        grid-column: 3 / 4;
+    }
+
+    .item:nth-child(15) {
+        grid-row: 4 / 5;
+        grid-column: 4 / 5;
+    }
+    .item:nth-child(16) {
+        grid-row: 4 / 5;
+        grid-column: 5 / 6;
+    }
+
+    .item:nth-child(17) {
+        grid-row: 5 / 6;
+        grid-column: 1 / 2;
+    }
+
+    .item:nth-child(18) {
+        grid-row: 5 / 6;
+        grid-column: 2 / 3;
+    }
+
+    .item:nth-child(19) {
+        grid-row: 5 / 6;
+        grid-column: 3 / 4;
+    }
+
+    .item:nth-child(20) {
+        grid-row: 5 / 6;
+        grid-column: 4 / 5;
+    }
+    .item:nth-child(21) {
+        grid-row: 5 / 6;
+        grid-column: 5 / 6;
+    }
+
+    .item:nth-child(22) {
+        grid-row: 6 / 7;
+        grid-column: 1 / 6;
+    }
+
+.status-quick-item {
+    /*    background: #000826;*/
+    /* border: 2px solid #0F2D55;*/
+    display: flex;
+    align-items: center;
+    font-size: 18px;
+}
+
+.eqpInfo {
+    background-color: #000826;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    border-top: 2px solid #0F2D55;
+    border-bottom: 2px solid #0F2D55;
+    color:yellow;
+}
+
+.layui-btn-width-full {
+    width: 100%;
+}
+
+img {
+    border: none;
+    max-width: 100%;
+}
+
+#title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /*font-family: 'Cambria';*/
+    font-weight: bold;
+}
+
+#footer {
+    color: #999;
+    align-items: center;
+    justify-content: center;
+    border-top: 2px solid #0F2D55;
+}
+
+.copyright {
+    font-weight: bold;
+    font-size: 16px;
+}

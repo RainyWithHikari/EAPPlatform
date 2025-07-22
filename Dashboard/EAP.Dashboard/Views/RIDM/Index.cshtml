@@ -1,0 +1,290 @@
+﻿@{
+    ViewBag.Title = "合料机总看板";
+    string DetailViewUrl = Url.Action("Detail", "RIDM");
+}
+<html>
+<head>
+
+    <link rel="stylesheet" href="~/Content/RIDMdashboardOverall.css?v=1.1" />
+    <link rel="stylesheet" href="~/Content/font-awesome/css/font-awesome.css">
+    <link rel="stylesheet" href="~/Content/font/iconfont.css">
+    <link rel="stylesheet" href="~/Content/bootstrap.min.css" />
+    <script type="text/javascript" src="~/Scripts/jquery-3.4.1.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/echartjs/dist/echarts.js"></script>
+
+    <link rel="shortcut icon" href="~/Scripts/favicon.ico" />
+    <link rel="stylesheet" href="~/Scripts/layui/css/layui.css" media="all">
+    <script type="text/javascript" src="~/Scripts/layui/layui.js"></script>
+    <script type="module" charset="utf-8" src="~/Scripts/RIDMdashboardOverall.js?v=1.2"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="item bi-1 row" id="dashboard-title">
+            <div class='col-2 logo'><img src="~/Content/Pictures/logo/Logo_W_SMDi4_400x65_简.png" /> </div>
+            <div class='col-8 row'>
+                <h2 class='col-12' id="title">ZJ 智能立库 - 合料机</h2>
+                <h3 class='col-12' id="" style="font-weight:bold;">ZJ Smart Warehouse - Reel Integrate Machine</h3>
+            </div>
+
+            <div class="col-2 row">
+
+                <div class="col-12" style="margin-top: 10px; justify-content: right;">
+                    @*<h6 class='row' id="LN" ></h6>*@
+                    @*<h6 class='row' id="PN"></h6>*@
+
+                    <form class="layui-form-item row" action="">
+
+                        <div class="input-group">
+
+                            <a href="@DetailViewUrl" target="_blank">
+                                <button class="btn btn-info" type="button">Details</button>
+                            </a>
+                            <button class="btn btn-group btn-primary" type="button" id="download-report">
+                                Downloads
+                            </button>
+                            <button class="btn btn-group btn-secondary" type="button" onclick="showFullScreen()">
+                                Full Screen
+                            </button>
+
+                            @*<input type="text" class="form-control bg-dark text-light" id="datepicker" lay-filter="datepicker" placeholder="yyyy-MM-dd">*@
+
+                        </div>
+                        @*<div class="input-group input-group-sm mb-sm-1">
+                                <label class="input-group-text ">Line</label>
+
+                                <select class="form-select " name="modules" lay-verify="required" lay-search="" id="lineFilter" lay-filter="lineFilter">
+                                </select>
+                        </div>*@
+
+
+
+
+                    </form>
+
+                    @*<span class="row" id="PN"></span>*@
+                </div>
+                <!--<div class="col-3">-->
+                @*<a class="controlbox fa fa-expand" id="fullScreen" onclick="showFullScreen()"></a>*@
+
+                <!--</div>-->
+                @*<span class="col" id="fullScreen" class="controlbox fa fa-expand" onclick="showFullScreen()"></span>*@
+
+
+
+
+
+            </div>
+        </div>
+        <div class="item bi-2 row" id="eqp-profile-1">
+            <div class="row eqpInfo clickable-div" value="EQAMS00001">
+                1号机 - EQAMS00001
+            </div>
+
+            @*<div class="status-quick-item row">
+
+                <span class="col-4" style="font-weight: bold; text-align: right;">机种</span>
+                <span class="col-8" id="recipe-1"></span>
+
+
+            </div>
+            <div class="status-quick-item row" style=" background-color: #000826;">
+
+                <span class="col-4" style="font-weight: bold; text-align: right;">工单</span>
+                <span class="col-8" id="workOrder-1"></span>
+
+            </div>
+            <div class="status-quick-item row">
+
+                <span class="col-4" style="font-weight: bold; text-align: right;">料号</span>
+                <span class="col-8" id="materialID-1"></span>
+
+            </div>*@
+
+        </div>
+        <div class="item bi-3 row" id="eqp-profile-2">
+            <div class="row eqpInfo clickable-div" value="EQAMS00002">
+                2号机 - EQAMS00002
+            </div>
+
+        </div>
+        <div class="item bi-4 row" id="eqp-profile-3">
+            <div class="row eqpInfo clickable-div" value="EQAMS00003">
+                3号机 - EQAMS00003
+            </div>
+
+
+        </div>
+        <div class="item bi-5 row" id="eqp-profile-4">
+            <div class="row eqpInfo clickable-div" value="EQAMS00004">
+                4号机 - EQAMS00004
+            </div>
+
+            @*<div class="status-quick-item row">
+
+                <span class="col-4" style="font-weight: bold; text-align: right;">机种</span>
+                <span class="col-8" id="recipe-4"></span>
+
+
+            </div>
+            <div class="status-quick-item row" style=" background-color: #000826;">
+
+                <span class="col-4" style="font-weight: bold; text-align: right;">工单</span>
+                <span class="col-8" id="workOrder-4"></span>
+
+            </div>
+            <div class="status-quick-item row">
+
+                <span class="col-4" style="font-weight: bold; text-align: right;">料号</span>
+                <span class="col-8" id="materialID-4"></span>
+
+            </div>*@
+        </div>
+        <div class="item bi-6 row" id="eqp-profile-5">
+            <div class="row eqpInfo clickable-div" value="EQAMS00005">
+                5号机 - EQAMS00005
+            </div>
+
+            @*<div class="status-quick-item row">
+
+                <span class="col-4" style="font-weight: bold; text-align: right;">机种</span>
+                <span class="col-8" id="recipe-4"></span>
+
+
+            </div>
+            <div class="status-quick-item row" style=" background-color: #000826;">
+
+                <span class="col-4" style="font-weight: bold; text-align: right;">工单</span>
+                <span class="col-8" id="workOrder-4"></span>
+
+            </div>
+            <div class="status-quick-item row">
+
+                <span class="col-4" style="font-weight: bold; text-align: right;">料号</span>
+                <span class="col-8" id="materialID-4"></span>
+
+            </div>*@
+        </div>
+        @*<div class="item bi-6 row" id="realtime-utilization-rate-5">
+
+        </div>*@
+        <div class="item bi-7 row" id="bar-data-output-1">
+            @*x号机：历史七天合盘明细（柱状图）*@
+        </div>
+        <div class="item bi-8 row" id="bar-data-output-2">
+            @*x号机：历史七天合盘明细（柱状图）*@
+        </div>
+        <div class="item bi-9 row" id="bar-data-output-3">
+            @*x号机：历史七天合盘明细（柱状图）*@
+        </div>
+        <div class="item bi-10 row" id="bar-data-output-4">
+            @*x号机：历史七天合盘明细（柱状图）*@
+        </div>
+        <div class="item bi-11 row" id="bar-data-output-5">
+            @*x号机：历史七天合盘明细（柱状图）*@
+        </div>
+
+
+        <div class="item bi-12 row" id="pie-data-output-1">
+            @*1号机：利用率*@
+        </div>
+        <div class="item bi-13 row" id="pie-data-output-2">
+            @*2号机：利用率*@
+        </div>
+        <div class="item bi-14 row" id="pie-data-output-3">
+            @*3号机：利用率*@
+        </div>
+        <div class="item bi-15 row" id="pie-data-output-4">
+            @*4号机：利用率*@
+        </div>
+        <div class="item bi-16 row" id="pie-data-output-5">
+            @*5号机：利用率*@
+        </div>
+
+        <div class="item bi-17 row" id="trend-data-output-1">
+            @*1号机：合盘饼图*@
+        </div>
+        <div class="item bi-18 row" id="trend-data-output-2">
+            @*2号机：合盘饼图*@
+        </div>
+        <div class="item bi-19 row" id="trend-data-output-3">
+            @*3号机：合盘饼图*@
+        </div>
+        <div class="item bi-20 row" id="trend-data-output-4">
+            @*4号机：合盘饼图*@
+        </div>
+
+        <div class="item bi-21 row" id="trend-data-output-5">
+            @*5号机：合盘饼图*@
+        </div>
+
+        <div class="item bi-22 row" id="footer">
+            <div class="col-2" id="watermark">Dashboard Designer: rainy_xu@usiglobal.com</div>
+            <span class="copyright col-8">Copyright © @DateTime.Now.Year SMDC All rights reserved. 智能制造开发中心 版权所有</span>
+            <span class="col-2" id="showTime"></span>
+        </div>
+
+    </div>
+
+    <script type="text/javascript">
+
+        function showFullScreen() {
+
+            /*判断是否全屏*/
+            let isFullscreen = document.fullScreenElement//W3C
+                || document.msFullscreenElement //IE11
+                || document.mozFullScreenElement //火狐
+                || document.webkitFullscreenElement //谷歌
+                || false;
+
+            if (!isFullscreen) {
+                //document.getElementsByTagName('body')[0].style.height = window.innerHeight+'px';
+                let el = document.documentElement;
+                if (el.requestFullscreen) {
+                    el.requestFullscreen();
+                } else if (el.mozRequestFullScreen) {
+                    el.mozRequestFullScreen();
+                } else if (el.webkitRequestFullscreen) {
+                    el.webkitRequestFullscreen();
+                } else if (el.msRequestFullscreen) {
+                    el.msRequestFullscreen();
+                }
+                $("#fullScreen").removeClass("fa-expand").addClass("fa-compress");
+            }
+            else {
+
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.webkitCancelFullScreen) {
+                    document.webkitCancelFullScreen();
+                }
+                $("#fullScreen").removeClass("fa-compress").addClass("fa-expand");
+                //document.getElementsByTagName('body')[0].style.height = window.innerHeight+'px';
+            }
+        }
+
+        var t = null;
+        t = setTimeout(time, 1000);
+        function time() {
+            clearTimeout(t);
+            dt = new Date();
+            var y = dt.getFullYear();
+            var mt = dt.getMonth() + 1;
+            var day = dt.getDate();
+            var h = dt.getHours();
+            var m = dt.getMinutes();
+            var s = dt.getSeconds();
+            document.getElementById("showTime").innerHTML = y + "年" + mt + "月" + day + "日 -" + h + "时" + m + "分" + s + "秒";
+            t = setTimeout(time, 1000);
+        }
+
+
+
+    </script>
+
+</body>
+</html>

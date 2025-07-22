@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "echarts": "^5.4.2",
+    "tween.js": "^16.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0"
+  }
+}

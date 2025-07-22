@@ -1,0 +1,297 @@
+﻿@{
+    ViewBag.Title = "ETECH看板";
+    string AlarmViewUrl = Url.Action("alarmdetails", "ETechDashboard");
+}
+<html>
+<head>
+
+
+    <link rel="stylesheet" href="~/Content/ETechDashboard-v2.css" />
+    <link rel="stylesheet" href="~/Content/font-awesome/css/font-awesome.css">
+    <link rel="stylesheet" href="~/Content/font/iconfont.css">
+    <link rel="stylesheet" href="~/Content/bootstrap.min.css" />
+
+    <script src="~/Scripts/layui/layui.table.formdate.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery-3.4.1.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/echartjs/dist/echarts.js"></script>
+
+    <link rel="shortcut icon" href="~/Scripts/favicon.ico" />
+    <link rel="stylesheet" href="~/Scripts/layui/css/layui.css" media="all">
+    <script type="text/javascript" src="~/Scripts/layui/layui.js"></script>
+    <script type="module" charset="utf-8" src="~/Scripts/ETechDashboard.js?v=1.0"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="item bi-1 row" id="dashboard-title">
+            <div class='col-3 logo'><img src="~/Content/Pictures/logo/Logo_W_SMDi4_400x65_简.png" /> </div>
+            <div class='col-6 row'>
+                <h1 class='col-12' id="title">Auto Assembly Dashboard · E-TECH</h1>
+
+            </div>
+
+            <div class="col-3 row">
+
+                <div class="col-12" style="margin-top:10px;">
+                    <form class="layui-form-item row" action="">
+                        <div class="input-group">
+
+                            <label class="input-group-text bg-dark text-light">EQP</label>
+                            <select class="form-select bg-dark text-light" name="modules" lay-verify="required" lay-search="" id="eqpFilter" lay-filter="eqpFilter">
+                            </select>
+                            <input type="text" class="form-control bg-dark text-light" id="datepicker" lay-filter="datepicker" placeholder="yyyy-MM-dd">
+
+                            <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="true">
+                                Tools
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-dark">
+                                <li>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckChecked">@*checked*@
+                                        <label class="form-check-label" for="flexSwitchCheckChecked">轮播开关</label>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="input-group border-0">
+                                        <label class="input-group-text bg-dark text-light border-dark">轮播频率</label>
+                                        <input type="text" class="form-control bg-dark text-light border-dark" id="interval" placeholder="30" aria-label="30s" aria-describedby="basic-addon1" style="width:60px;">
+                                        <label class="input-group-text bg-dark text-light border-dark">s</label>
+                                    </div>
+                                </li>
+
+                                <li><a class="dropdown-item" onclick="showFullScreen()">Full Screen</a></li>
+                                <li><a class="dropdown-item" href="@AlarmViewUrl" target="_blank">Alarm Details</a></li>
+
+                            </ul>
+                        </div>
+
+                    </form>
+
+                </div>
+           
+            </div>
+        </div>
+        <div class="item bi-2 row" id="bar-data-output">
+
+            <div class="col-2 row">
+
+                <div class="row">
+                    <div class="col input-group">
+                        <button class="form-control btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            维护生产信息
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" id="addMfgTime" href="#">添加开线时间</a></li>
+                            <li><a class="dropdown-item" id="updateTagret" href="#">更新产能目标</a></li>
+                            <li><a class="dropdown-item" id="updateAlarmTarget" href="#">更新机故目标</a></li>
+                        </ul>
+                        @* <button type="button" class="form-control btn btn-outline-primary" id="updateTagret">更新产能目标</button>*@
+                    </div>
+
+
+                    <div class="col input-group">
+                        @* <button type="button" class="form-control btn btn-outline-primary exportReport" id="liveToastBtn2">导出看板数据</button>*@
+                        <button type="button" class="form-control btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">导出看板数据</button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item exportReport" id="liveToastBtn2" href="#">机故数据</a></li>
+                            @*<li><a class="dropdown-item exportYieldReport" href="#">良率+产量数据</a></li>*@
+
+                        </ul>
+
+                    </div>
+                </div>
+                
+
+            </div>
+            <div class="col-10 row">
+
+
+                <div class="col status-quick-item row">
+
+                    <div class="col-3">
+                        <i class="fa fa-solid fa-check-circle fa-xl" id="iStationCapacity1" style="color: green; font-size:30px;"></i>
+
+                    </div>
+                    <div class="col-9" style="text-align:left;">
+                        <span class="row">Load the FH Assy</span>
+                        <span class="row text-muted" id="divStationCapacity1" style="color: lightskyblue;">0</span>
+                    </div>
+
+                </div>
+                <div class="col status-quick-item row">
+
+                    <div class="col-3">
+                        <i class="fa fa-solid fa-check-circle fa-xl" id="iStationCapacity2" style="color: green; font-size:30px;"></i>
+
+                    </div>
+                    <div class="col-9" style="text-align:left;">
+                        <span class="row">Plasma Treatment</span>
+                        <span class="row text-muted" id="divStationCapacity2" style="color: lightskyblue;">0</span>
+                    </div>
+
+                </div>
+                <div class="col status-quick-item row">
+
+                    <div class="col-3">
+                        <i class="fa fa-solid fa-check-circle fa-xl" id="iStationCapacity3" style="color: green; font-size:30px;"></i>
+
+                    </div>
+                    <div class="col-9" style="text-align:left;">
+                        <span class="row">Dispensing  & Cover Assembling</span>
+                        <span class="row text-muted" id="divStationCapacity3" style="color: lightskyblue;">0</span>
+                    </div>
+
+                </div>
+                <div class="col status-quick-item row">
+
+                    <div class="col-3">
+                        <i class="fa fa-solid fa-check-circle fa-xl" id="iStationCapacity4" style="color: green; font-size:30px;"></i>
+
+                    </div>
+                    <div class="col-9" style="text-align:left;">
+                        <span class="row">Auto-screwing & Altimetry</span>
+                        <span class="row text-muted" id="divStationCapacity4" style="color: lightskyblue;">0</span>
+                    </div>
+
+                </div>
+                <div class="col status-quick-item row">
+
+                    <div class="col-3">
+                        <i class="fa fa-solid fa-check-circle fa-xl" id="iStationCapacity5" style="color: green; font-size:30px;"></i>
+
+                    </div>
+                    <div class="col-9" style="text-align:left;">
+                        <span class="row">Auto-unload the FH Assy</span>
+                        <span class="row text-muted" id="divStationCapacity5" style="color: lightskyblue;">0</span>
+                    </div>
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+        <div class="item bi-3 row" id="chart2">
+            @*x号机：机种，料号，工单*@
+            <div class="row eqpInfo">
+                <div class="row" id="EQID"></div>
+                <div class="row" id="eqpName">
+
+                </div>
+            </div>
+            <div class="row eqpInfo">
+                <div class="col status-quick-item row">
+                    <i class="fa fa-solid fa-check-circle fa-xl col-4" id="status-icon" style="color: green; font-size:45px;"></i> @*fa-exclamation-triangle*@
+                    <div class="col-8">
+                        <span class="row" style="font-weight:bold;">Status</span>
+                        <span class="row" id="status"></span>
+                    </div>
+
+                </div>
+                <div class="col status-quick-item row">
+                    <i class="fa fa-solid fa-cubes fa-xl col-4" style="color: white; font-size:45px;"></i>
+                    <div class="col-8">
+                        <span class="row" style="font-weight:bold;">Output</span>
+                        <span class="row" id="outputs"></span>
+                    </div>
+
+                </div>
+
+                <div class="col status-quick-item row">
+                    <i class="fa fa-solid fa-exclamation-circle fa-xl col-4 " style="color: white; font-size:45px;"></i>
+                    <div class="col-8">
+                        <span class="row" style="font-weight:bold;">Alarm Rate</span>
+                        <span class="row" id="down-rate"></span>
+                    </div>
+
+                </div>
+            </div>
+
+
+        </div>
+        <div class="item bi-4 row " id="tool-bar-date">
+            <div class="col" id="output-guage">@*output*@</div>
+            <div class="col" id="achieve-guage">@*achieve rate*@</div>
+            <div class="col" id="loading-guage">@*Loading rate*@</div>
+
+        </div>
+        <div class="item bi-5 row" id="monthly-alarm-time">
+            @*5：By Month 生产实际/机故时间*@
+
+        </div>
+        <div class="item bi-6 row" style="display: flex; /* justify-content: start; */ align-items: flex-start; align-content: flex-start;">
+            @*<h3>History Alarms</h3>*@
+            <table id="table-data-alarms"></table>
+        </div>
+
+        <div class="item bi-7 row" id="footer">
+            <div class="col-2" id="watermark">Dashboard Designer: rainy_xu@usiglobal.com</div>
+            <span class="copyright col-8">Copyright © @DateTime.Now.Year SMDC All rights reserved. 智能制造开发中心 版权所有</span>
+            <span class="col-2" id="showTime"></span>
+        </div>
+
+    </div>
+
+    <script type="text/javascript">
+
+        function showFullScreen() {
+
+            /*判断是否全屏*/
+            let isFullscreen = document.fullScreenElement//W3C
+                || document.msFullscreenElement //IE11
+                || document.mozFullScreenElement //火狐
+                || document.webkitFullscreenElement //谷歌
+                || false;
+
+            if (!isFullscreen) {
+                //document.getElementsByTagName('body')[0].style.height = window.innerHeight+'px';
+                let el = document.documentElement;
+                if (el.requestFullscreen) {
+                    el.requestFullscreen();
+                } else if (el.mozRequestFullScreen) {
+                    el.mozRequestFullScreen();
+                } else if (el.webkitRequestFullscreen) {
+                    el.webkitRequestFullscreen();
+                } else if (el.msRequestFullscreen) {
+                    el.msRequestFullscreen();
+                }
+                $("#fullScreen").removeClass("fa-expand").addClass("fa-compress");
+            }
+            else {
+
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.webkitCancelFullScreen) {
+                    document.webkitCancelFullScreen();
+                }
+                $("#fullScreen").removeClass("fa-compress").addClass("fa-expand");
+                //document.getElementsByTagName('body')[0].style.height = window.innerHeight+'px';
+            }
+        }
+
+        var t = null;
+        t = setTimeout(time, 1000);
+        function time() {
+            clearTimeout(t);
+            dt = new Date();
+            var y = dt.getFullYear();
+            var mt = dt.getMonth() + 1;
+            var day = dt.getDate();
+            var h = dt.getHours();
+            var m = dt.getMinutes();
+            var s = dt.getSeconds();
+            document.getElementById("showTime").innerHTML = y + "年" + mt + "月" + day + "日 -" + h + "时" + m + "分" + s + "秒";
+            t = setTimeout(time, 1000);
+        }
+
+
+
+    </script>
+
+</body>
+</html>

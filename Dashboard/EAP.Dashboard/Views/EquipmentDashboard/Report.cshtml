@@ -1,0 +1,713 @@
+﻿
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="~/Content/font-awesome/css/font-awesome.css">
+    <link rel="stylesheet" href="~/Content/font/iconfont.css">
+    <link rel="stylesheet" href="~/Content/bootstrap.min.css" />
+    <script type="text/javascript" src="~/Scripts/jquery-3.4.1.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/bootstrap.bundle.min.js"></script>
+    <link rel="shortcut icon" href="~/Scripts/favicon.ico" />
+    <link rel="stylesheet" href="~/Scripts/layui-2.7.6/css/layui.css">
+    <script type="text/javascript" src="~/Scripts/layui-2.7.6/layui.js"></script>
+    <link rel="stylesheet" href="~/Content/bootstrap.min.css" />
+    <script type="text/javascript" src="~/Scripts/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/layui/xm-select.js"></script>
+</head>
+<body>
+    <div id="timepoint-selector" style="padding-top:10px">
+        <div class="layui-tab layui-tab-brief" lay-filter="docDemoTabBrief">
+            <ul class="layui-tab-title" style="color:black">
+                <li class="layui-this">报表下载</li>
+                <li>日、周、月报表</li>
+                <li>站别&设备信息</li>
+                <li>发送邮箱地址</li>
+            </ul>
+            <div class="layui-tab-content" style="height: 100px;">
+                <div class="layui-tab-item layui-show">
+                    <div class="layui-form" id="downloadform">
+                        <div class="layui-form-item">
+                            <div class="layui-inline" style="color:black">
+                                <label class="layui-form-label" style="width:120px">开始时间</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" class="layui-input" id="laydate-date1" name="startday" placeholder="yyyy-MM-dd" autocomplete="off" />
+                                </div>
+                            </div>
+                            <div class="layui-inline" style="color:black">
+                                <div class="layui-input-inline">
+                                    <select class="layui-input" id="laydate-hour1" name="starthour" lay-search>
+                                        <option value="0" selected>0</option>
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                        <option value="5">5</option>
+                                        <option value="6">6</option>
+                                        <option value="7">7</option>
+                                        <option value="8">8</option>
+                                        <option value="9">9</option>
+                                        <option value="10">10</option>
+                                        <option value="11">11</option>
+                                        <option value="12">12</option>
+                                        <option value="13">13</option>
+                                        <option value="14">14</option>
+                                        <option value="15">15</option>
+                                        <option value="16">16</option>
+                                        <option value="17">17</option>
+                                        <option value="18">18</option>
+                                        <option value="19">19</option>
+                                        <option value="20">20</option>
+                                        <option value="21">21</option>
+                                        <option value="22">22</option>
+                                        <option value="23">23</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <div class="layui-inline" style="color:black">
+                                <label class="layui-form-label" style="width:120px">结束时间</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" class="layui-input" id="laydate-date2" name="endday" placeholder="yyyy-MM-dd" autocomplete="off" />
+                                </div>
+                            </div>
+                            <div class="layui-inline" style="color:black">
+                                <div class="layui-input-inline">
+                                    <select class="layui-input" id="laydate-hour2" name="endhour" lay-search>
+                                        <option value="0" selected>0</option>
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                        <option value="5">5</option>
+                                        <option value="6">6</option>
+                                        <option value="7">7</option>
+                                        <option value="8">8</option>
+                                        <option value="9">9</option>
+                                        <option value="10">10</option>
+                                        <option value="11">11</option>
+                                        <option value="12">12</option>
+                                        <option value="13">13</option>
+                                        <option value="14">14</option>
+                                        <option value="15">15</option>
+                                        <option value="16">16</option>
+                                        <option value="17">17</option>
+                                        <option value="18">18</option>
+                                        <option value="19">19</option>
+                                        <option value="20">20</option>
+                                        <option value="21">21</option>
+                                        <option value="22">22</option>
+                                        <option value="23">23</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <div class="layui-inline" style="color:black">
+                                <label class="layui-form-label" style="width:120px">EQID</label>
+                                <div class="layui-input-inline" style="width:400px">
+                                    <!--多选-->
+                                    <div id="deviceSelect1" class="xm-select-demo"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <div class="layui-input-block">
+                                <button class="layui-btn" lay-submit lay-filter="demo1">下载</button>
+                                <button class="layui-btn" lay-submit lay-filter="demo2">邮件发送</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-tab-item">
+                    <div class="layui-form" id="reportform">
+                        <div class="layui-form-item">
+                            <div class="layui-inline" style="color:black">
+                                <label class="layui-form-label" style="width:120px">日期</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" class="layui-input" id="laydate-date3" name="date" placeholder="yyyy-MM-dd" autocomplete="off" />
+                                </div>
+                            </div>
+                            <div class="layui-inline" style="color:black">
+                                <div class="layui-input-inline">
+                                    <select class="layui-input" id="laydate-hour3" name="hour" lay-search>
+                                        <option value="0" selected>0</option>
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                        <option value="5">5</option>
+                                        <option value="6">6</option>
+                                        <option value="7">7</option>
+                                        <option value="8">8</option>
+                                        <option value="9">9</option>
+                                        <option value="10">10</option>
+                                        <option value="11">11</option>
+                                        <option value="12">12</option>
+                                        <option value="13">13</option>
+                                        <option value="14">14</option>
+                                        <option value="15">15</option>
+                                        <option value="16">16</option>
+                                        <option value="17">17</option>
+                                        <option value="18">18</option>
+                                        <option value="19">19</option>
+                                        <option value="20">20</option>
+                                        <option value="21">21</option>
+                                        <option value="22">22</option>
+                                        <option value="23">23</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <div class="layui-inline" style="color:black">
+                                <label class="layui-form-label" style="width:120px">EQID</label>
+                                <div class="layui-input-inline" style="width:400px">
+                                    <!--多选-->
+                                    <div id="deviceSelect2" class="xm-select-demo"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <div class="layui-input-block">
+                                <button class="layui-btn" lay-submit lay-filter="demo3">日报表</button>
+                                <button class="layui-btn" lay-submit lay-filter="demo4">周报表</button>
+                                <button class="layui-btn" lay-submit lay-filter="demo5">月报表</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-tab-item">
+                    <form class="layui-form layui-form-pane" action="" lay-filter="deviceform">
+                        <div class="layui-form-item" style="text-align: center;">
+                            <div class="layui-inline">
+                                <label class="layui-form-label">站别</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="STATION" autocomplete="off" lay-verify="required" class="layui-input">
+                                </div>
+                            </div>
+                            <div class="layui-inline">
+                                <label class="layui-form-label">EQID</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="EQID" autocomplete="off" lay-verify="required" class="layui-input">
+                                </div>
+                            </div>
+                            <div class="layui-inline">
+                                <label class="layui-form-label">SFIS 站别</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="OUTPUTSTATION" autocomplete="off" class="layui-input">
+                                </div>
+                            </div>
+                            <div class="layui-inline">
+                                <label class="layui-form-label">产出EQID</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="OUTPUTEQID" autocomplete="off" class="layui-input">
+                                </div>
+                            </div>
+                            <div class="layui-inline">
+                                <label class="layui-form-label">系统EQID</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="REMARK" autocomplete="off" class="layui-input">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-form-item" style="text-align: center;">
+                            <div class="layui-input-block">
+                                <button class="layui-btn" lay-submit lay-filter="demo6">新增</button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <table class="layui-hide" id="devicelist" lay-filter="devicelist"></table>
+                </div>
+                <div class="layui-tab-item">
+                    <table class="layui-hide" id="emaillist" lay-filter="emaillist"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/html" id="toolbarDemo">
+        <div class="layui-btn-container" style="float:left;display:inline">
+            <button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="Delete">删除</button>
+        </div>
+    </script>
+
+    <script>
+        layui.use(['table', 'form', 'laydate', 'element'], function () {
+            var table = layui.table
+                , form = layui.form
+                , laydate = layui.laydate
+                , element = layui.element;
+
+            laydate.render({
+                elem: '#laydate-date1'
+            });
+            laydate.render({
+                elem: '#laydate-date2'
+            });
+            laydate.render({
+                elem: '#laydate-date3'
+            });
+
+            var deviceSelect1 = xmSelect.render({
+                el: '#deviceSelect1',
+                filterable: true,
+                model: {
+                    label: {
+                        type: 'block',
+                        block: {
+                            //最大显示数量, 0:不限制
+                            showCount: 1,
+                            //是否显示删除图标
+                            showIcon: false,
+                        }
+                    }
+                },
+                toolbar: {
+                    show: true,
+                    list: ['ALL', 'CLEAR']
+                }
+            });
+
+            var deviceSelect2 = xmSelect.render({
+                el: '#deviceSelect2',
+                filterable: true,
+                model: {
+                    label: {
+                        type: 'block',
+                        block: {
+                            //最大显示数量, 0:不限制
+                            showCount: 1,
+                            //是否显示删除图标
+                            showIcon: false,
+                        }
+                    }
+                },
+                toolbar: {
+                    show: true,
+                    list: ['ALL', 'CLEAR']
+                }
+            });
+
+            form.on('submit(demo1)', function (data) {
+                //下载
+                var startday = data.field.startday;
+                var starthour = data.field.starthour;
+                var endday = data.field.endday;
+                var endhour = data.field.endhour;
+                var eqids = deviceSelect1.getValue();
+                if (startday != "" && starthour != "" && endday != "" && endhour != "" && eqids.length > 0) {
+
+                    var url = "DownloadDeviceReport";
+                    var filename = startday.replace(/-/g, "") + starthour.padStart(2, "0") + "-" + endday.replace(/-/g, "") + endhour.padStart(2, "0") + "状态数据报表.xlsx";
+                    var params = {
+                        "startday": startday,
+                        "starthour": parseInt(starthour),
+                        "endday": endday,
+                        "endhour": parseInt(endhour),
+                        "devices": eqids//.map(it => ({ name: it.name, value: it.value }))
+                    };
+                    GetDownloadReport(url, params, filename);
+
+                }
+                else {
+                    layer.msg('<em style="color:black;font-style:normal;font-weight:normal">都得选，都不能为空！</em>', { icon: 5 });
+                }
+                return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+            });
+
+            form.on('submit(demo2)', function (data) {
+                //邮件发送
+                var startday = data.field.startday;
+                var starthour = data.field.starthour;
+                var endday = data.field.endday;
+                var endhour = data.field.endhour;
+                var eqids = deviceSelect1.getValue();
+
+                if (startday != "" && starthour != "" && endday != "" && endhour != "" && eqids.length > 0) {
+
+                    var params = {
+                        "startday": startday,
+                        "starthour": parseInt(starthour),
+                        "endday": endday,
+                        "endhour": parseInt(endhour),
+                        "devices": eqids
+                    };
+                    SendReportEmail(params);
+
+                }
+                else {
+                    layer.msg('<em style="color:black;font-style:normal;font-weight:normal">都得选，都不能为空！</em>', { icon: 5 });
+                }
+
+                return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+            });
+
+            form.on('submit(demo3)', function (data) {
+                //日报表
+                var daystr = data.field.date;
+                var hour = data.field.hour;
+                var eqids = deviceSelect2.getValue();
+                if (daystr != "" && eqids.length > 0) {
+                    var date = new Date(daystr);
+                    var nextdate = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);
+                    var nextdatestr = nextdate.getFullYear() + '-' + (nextdate.getMonth() + 1).toString().padStart(2, '0') + '-' + nextdate.getDate().toString().padStart(2, '0');
+
+                    var filename = daystr.replace(/-/g, "") + hour.padStart(2, '0') + "日报表.xlsx";
+                    var params = {
+                        "startdate": daystr,
+                        "enddate": nextdatestr,
+                        "hour": hour,
+                        "devices": eqids
+                    };
+                    DownloadSummaryReport(params, filename);
+
+                }
+                else {
+                    layer.msg('<em style="color:black;font-style:normal;font-weight:normal">都得选，都不能为空！</em>', { icon: 5 });
+                }
+                return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+            });
+
+            form.on('submit(demo4)', function (data) {
+                //周报表，周日是第一天
+                var daystr = data.field.date;
+                var hour = data.field.hour;
+                var eqids = deviceSelect2.getValue();
+                if (daystr != "" && eqids.length > 0) {
+                    var startOfWeek = new Date(daystr);
+                    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+                    var endOfWeek = new Date(daystr);
+                    endOfWeek.setDate(startOfWeek.getDate() + 7);
+                    var startOfWeekstr = startOfWeek.getFullYear() + '-' + (startOfWeek.getMonth() + 1).toString().padStart(2, '0') + '-' + startOfWeek.getDate().toString().padStart(2, '0');
+                    var endOfWeekstr = endOfWeek.getFullYear() + '-' + (endOfWeek.getMonth() + 1).toString().padStart(2, '0') + '-' + endOfWeek.getDate().toString().padStart(2, '0');
+
+                    var filename = startOfWeekstr.replace(/-/g, "") + hour.padStart(2, '0') + "-" + endOfWeekstr.replace(/-/g, "") + hour.padStart(2, '0') + "周报表.xlsx";
+                    var params = {
+                        "startdate": startOfWeekstr,
+                        "enddate": endOfWeekstr,
+                        "hour": hour,
+                        "devices": eqids
+                    };
+                    DownloadSummaryReport(params, filename);
+
+                }
+                else {
+                    layer.msg('<em style="color:black;font-style:normal;font-weight:normal">都得选，都不能为空！</em>', { icon: 5 });
+                }
+                return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+            });
+
+            form.on('submit(demo5)', function (data) {
+                //月报表
+                var daystr = data.field.date;
+                var hour = data.field.hour;
+                var eqids = deviceSelect2.getValue();
+                if (daystr != "" && eqids.length > 0) {
+                    var day = new Date(daystr);
+                    var startOfMonth = new Date(day.getFullYear(), day.getMonth(), 1);
+                    var endOfMonth = new Date(day.getFullYear(), day.getMonth() + 1, 1);
+                    var startOfMonth = startOfMonth.getFullYear() + '-' + (startOfMonth.getMonth() + 1).toString().padStart(2, '0') + '-' + startOfMonth.getDate().toString().padStart(2, '0');
+                    var endOfMonth = endOfMonth.getFullYear() + '-' + (endOfMonth.getMonth() + 1).toString().padStart(2, '0') + '-' + endOfMonth.getDate().toString().padStart(2, '0');
+
+                    var filename = startOfMonth.replace(/-/g, "") + hour.padStart(2, '0') + "-" + endOfMonth.replace(/-/g, "") + hour.padStart(2, '0') + "月报表.xlsx";
+                    var params = {
+                        "startdate": startOfMonth,
+                        "enddate": endOfMonth,
+                        "hour": hour,
+                        "devices": eqids
+                    };
+                    DownloadSummaryReport(params, filename);
+
+                }
+                else {
+                    layer.msg('<em style="color:black;font-style:normal;font-weight:normal">都得选，都不能为空！</em>', { icon: 5 });
+                }
+                return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+            });
+
+            form.on('submit(demo6)', function (data) {
+                //添加设备
+                var params = data.field;
+                AddDevice(params);
+                return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+            });
+
+            getData();
+            async function getData() {
+                try {
+                    let result1 = await $.ajax({
+                        type: 'post',
+                        dataType: 'json',
+                        url: 'GetReportDevices',
+                        success: function (data) {
+                            deviceSelect1.update({
+                                data: data.data,
+                            });
+
+
+                            deviceSelect2.update({
+                                data: data.data,
+                            });
+                        },
+                        error: function () {
+                        }
+                    });
+                    //处理返回的数据，并继续执行下一个 Ajax 请求
+
+                    table.render({
+                        elem: '#devicelist',
+                        url: 'GetDeviceList',
+                        height: 'full',
+                        toolbar: '#toolbarDemo',
+                        defaultToolbar: [],
+                        editTrigger: 'dblclick', // 触发编辑的事件类型（默认 click ）。 v2.7.0 新增，之前版本固定为单击触发
+                        page: false,
+                        cols: [[
+                            { type: 'checkbox' },
+                            { field: 'ID', hide: true },
+                            { field: 'STATION', title: '站别', minWidth: 150, sort: true, edit: 'text' },
+                            { field: 'EQID', title: 'EQID', minWidth: 150, sort: true, edit: 'text' },
+                            { field: 'OUTPUTSTATION', title: 'SFIS 站别', minWidth: 150, edit: 'text' },
+                            { field: 'OUTPUTEQID', title: '代表产出EQID', minWidth: 150, edit: 'text' },
+                            { field: 'REMARK', title: 'EAP系统EQID', minWidth: 150, edit: 'text' }
+                        ]]
+                    })
+
+                    table.render({
+                        elem: '#emaillist',
+                        url: 'GetEmailAddressList',
+                        height: 'full',
+                        page: false,
+                        cols: [[
+                            { field: 'ITCode', title: '工号', minWidth: 80, sort: true },
+                            { field: 'Name', title: '用户名', minWidth: 120, sort: true },
+                            { field: 'Email', title: '邮箱', minWidth: 150 }
+                        ]]
+                    })
+
+                } catch (error) {
+                    //处理错误
+                }
+            }
+
+            table.on('toolbar(devicelist)', function (obj) {
+                var id = obj.config.id;
+                var checkStatus = table.checkStatus(id);
+                var othis = lay(this);
+
+                switch (obj.event) {
+                    case 'Delete':
+                        var data = checkStatus.data;
+                        if (data.length > 0) {
+                            layer.confirm('<em style="color:black;font-style:normal;font-weight:normal">确定删除？</em>', { title: '提示' }, function (index) {
+                                layer.close(index);
+
+                                var array = data.map(it => it.ID);
+                                Delete(array);
+
+                            });
+                        }
+                        break;
+                }
+
+            })
+
+            // 单元格编辑后的事件
+            table.on('edit(devicelist)', function (obj) {
+                var value = obj.value //得到修改后的值
+                    , data = obj.data //得到所在行所有键值
+                    , field = obj.field; //得到字段
+
+                $.ajax({
+                    url: 'UpdateReportDevices',
+                    data: {
+                        "id": data.ID,
+                        "value": value,
+                        "field": field
+                    },
+                    type: 'POST',
+                    contentType: 'application/x-www-form-urlencoded; charset=UTF-8',//数据类型必须有
+                    async: false,
+                    success: function (data) {
+
+                        table.reload('devicelist', {
+                            url: 'GetDeviceList'
+                        })
+
+                        if (data.res) {
+                            layer.msg('<em style="color:black;font-style:normal;font-weight:normal">修改成功！</em>', { icon: 1 });
+                        }
+                        else {
+                            layer.msg('<em style="color:black;font-style:normal;font-weight:normal">' + data.msg + '</em>', { icon: 5 });
+                        }
+
+                    }
+                });
+
+            });
+
+        });
+
+        function GetDownloadReport(url, data, filename) {
+
+            var loading_index = layui.layer.load(1, {
+                shade: [0.1, '#fff'] //0.1透明度的白色背景
+            });
+
+            $.ajax({
+                url: url,
+                type: 'post',
+                //headers: {
+                //    "Content-type": "application/json"
+                //},
+                data: data,
+                xhrFields: { responseType: "blob" },
+            }).then((res) => {
+                const blob = new Blob([res]);
+                //创建下载元素
+                const downloadElement = document.createElement('a');
+                // 创建下载的链接
+                const href = window.URL.createObjectURL(blob);
+                downloadElement.href = href;
+                downloadElement.download = filename; // 下载后文件名
+                document.body.appendChild(downloadElement);
+                downloadElement.click(); // 点击下载
+                document.body.removeChild(downloadElement); // 下载完成移除元素
+                window.URL.revokeObjectURL(href); // 释放掉blob对象
+
+                layui.layer.close(loading_index);
+            }).catch(error => {
+                console.log(error);
+                layui.layer.close(loading_index);
+            })
+
+        }
+
+        function SendReportEmail(data) {
+
+            var loading_index = layui.layer.load(1, {
+                shade: [0.1, '#fff'] //0.1透明度的白色背景
+            });
+
+            $.ajax({
+                url: 'SendReportEmail',
+                data: data,
+                type: 'POST',
+                contentType: 'application/x-www-form-urlencoded; charset=UTF-8',//数据类型必须有
+                async: false,
+                success: function (data) {
+
+                    if (data.res) {
+                        layui.layer.msg('<em style="color:black;font-style:normal;font-weight:normal">发送成功！</em>', { icon: 1 });
+                    }
+                    else {
+                        layui.layer.msg('<em style="color:black;font-style:normal;font-weight:normal">' + data.msg + '</em>', { icon: 5 });
+                    }
+
+                    layui.layer.close(loading_index);
+                },
+                error: function (xhr, status, error) {
+                    console.log(error);
+                    layui.layer.close(loading_index);
+                }
+            });
+
+        }
+
+        function DownloadSummaryReport(data, filename) {
+
+            var loading_index = layui.layer.load(1, {
+                shade: [0.1, '#fff'] //0.1透明度的白色背景
+            });
+
+            $.ajax({
+                url: 'DownloadSummaryReport',
+                type: 'post',
+                //headers: {
+                //    "Content-type": "application/json"
+                //},
+                data: data,
+                xhrFields: { responseType: "blob" },
+            }).then((res) => {
+                const blob = new Blob([res]);
+                //创建下载元素
+                const downloadElement = document.createElement('a');
+                // 创建下载的链接
+                const href = window.URL.createObjectURL(blob);
+                downloadElement.href = href;
+                downloadElement.download = filename; // 下载后文件名
+                document.body.appendChild(downloadElement);
+                downloadElement.click(); // 点击下载
+                document.body.removeChild(downloadElement); // 下载完成移除元素
+                window.URL.revokeObjectURL(href); // 释放掉blob对象
+
+                layui.layer.close(loading_index);
+            }).catch(error => {
+                console.log(error);
+
+                layui.layer.close(loading_index);
+            })
+
+        }
+
+        function AddDevice(data) {
+
+            $.ajax({
+                url: 'AddReportDevices',
+                data: data,
+                type: 'POST',
+                contentType: 'application/x-www-form-urlencoded; charset=UTF-8',//数据类型必须有
+                async: false,
+                success: function (data) {
+
+                    layui.table.reload('devicelist', {
+                        url: 'GetDeviceList'
+                    })
+
+                    if (data.res) {
+                        layui.layer.msg('<em style="color:black;font-style:normal;font-weight:normal">添加成功！</em>', { icon: 1 });
+                    }
+                    else {
+                        layui.layer.msg('<em style="color:black;font-style:normal;font-weight:normal">' + data.msg + '</em>', { icon: 5 });
+                    }
+
+                }
+            });
+
+        }
+
+        function Delete(list) {
+
+            $.ajax({
+                url: 'DeleteDevices',
+                data: {
+                    "list": list
+                },
+                type: 'POST',
+                contentType: 'application/x-www-form-urlencoded; chartset=UTF-8',
+                async: false,
+                success: function (data) {
+                    if (data.res) {
+                        layui.layer.msg('<em style="color:black;font-style:normal;font-weight:normal">删除成功！</em>', { icon: 1 });
+
+                        layui.table.reload('devicelist', {
+                            url: 'GetDeviceList'
+                        })
+
+                    }
+                    else
+                        layui.layer.msg('<em style="color:black;font-style:normal;font-weight:normal">' + data.msg + '</em>', { icon: 5 });
+                },
+                error: function (message) {
+                    alert('Error!');
+                }
+            })
+
+        }
+    </script>
+
+</body>
+
+</html>

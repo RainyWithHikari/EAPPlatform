@@ -1,0 +1,327 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="/layui/css/layui.css" media="all">
+    <link rel="stylesheet" href="/sitecss/statistics/equipmentdashboard.css">
+    <link rel="stylesheet" href="/font/iconfont.css">
+    <link rel="stylesheet" href="/font-awesome/css/font-awesome.css">
+    <link rel="shortcut icon" href="/favicon.ico" />
+
+
+
+</head>
+<body>
+    <script src="/jquery.min.js"></script>
+    <script src="/echarts/echarts.min.js"></script>
+    <script src="/layui/layui.js"></script>
+    <script>
+        layui.use(['carousel', 'form', 'slider', 'laydate', 'element'], function () {
+            var carousel = layui.carousel
+                , form = layui.form
+                , laydate = layui.laydate
+                , slider = layui.slider
+                , element = layui.element;
+            var c_option = {
+                elem: '#carousel'
+                , width: '100%' //设置容器宽度
+                , height: '95%'
+                , arrow: 'always' //始终显示箭头
+                , interval: 5000
+                , indicator: 'outside'
+            };
+
+            var ins = carousel.render(c_option);
+
+
+
+            $(function () {
+                resizeFontSize();
+                getData();
+                ChartssetInterval();
+            })//设置时间初始值
+            function ChartssetInterval() {
+                //每1分钟刷新一次界面
+                setInterval(function () {
+                    getData();
+                }, 30000);
+            }
+
+
+            function getData() {
+
+                $.ajax({
+                    type: 'post',
+                    dataType: 'json',
+                    data: {
+                        //"datetime": $("#datepicker").val(),
+                    },
+                    url: '/Statistics/EquipmentDashboard/GetData',
+                    success: function (retdata) {
+                        //console.log(retdata);
+                        var data = retdata.carddata;
+                        var oeedata = retdata.oeedata;
+                        GenerateEqpCards(data,oeedata);
+                        GenerateSummaryPieChart(retdata.typedata, retdata.statusdata)
+                    },
+                    error: function () {
+                    }
+                });
+
+            }
+
+            function GenerateEqpCards(data,oeedata) {
+                //console.log(oeedata);
+                var pagecount = data.length / 15;
+                var pageText = '';
+                for (var page = 0; page < pagecount; page++) {
+                    pageText += '<div class="layui-row layui-row-amhs" style="background: rgba(0,0,0,0); ">'
+
+                    for (var cardnum = page * 15; cardnum < (page + 1) * 15 && cardnum < data.length; cardnum++) {
+                        var eqp = data[cardnum];
+                        var v = eqp.RunRate * 255;
+                        var runrate = (eqp.RunRate * 100).toFixed(2);
+                        var color = 'rgb(' + (255 - v) + ',' + v + ',0)';
+                        var sysStateColorMap = new Map([['Unknown', 'layui-bg-cyan'], ['Idle', 'layui-bg-orange']
+                            , ['Run', 'layui-bg-green'], ['Alarm', 'layui-bg-red']
+                        ]);
+                        var moveStateMap = new Map([['MT_NA', '空闲'], ['MT_WAIT_FOR_START', '等待开始执行'], ['MT_RUNNING', '执行中'],
+                        ['MT_PAUSED', '暂停中'], ['MT_FINISHED', '已结束'], ['MT_IN_CANCEL', '已取消'],
+                        ['MT_WAIT_FOR_ACK', '等待上层系统回复'], ['MT_WAIT_FOR_CHECKPOINT', '交通管制等待中'], ['MT_PAUSED_OBSTACLE', '遇到障碍物暂停中'],]);
+                        
+                        //Rainy Add OEE related.
+                        for(var i = 0 ; i < oeedata.length ; i ++ ){
+                            var eqpoee = oeedata[i];
+                            //console.log(eqpoee);
+                            
+                            if(eqp.EQID == eqpoee.EQID && eqp.EQID == 'CONTI_001') {
+                                var oee = (parseFloat(eqpoee.Value) / 4800).toFixed(2);
+                                eqp.oee = oee;
+                                //console.log(eqp.oee);
+                                //console.log(eqpoee.EQID);
+                                //console.log(oee);
+                            }
+                            else if(eqp.EQID == eqpoee.EQID)
+                            {
+                                var oee = eqpoee.Value;
+                                eqp.oee = oee;
+                            }
+                            
+                        }
+                        
+                        //console.log(oee);
+                        var stateColor = sysStateColorMap.get(eqp.Status);
+                        //var moveState = moveStateMap.get(eqp.move_state);
+                        //console.log(stateColor);
+                        pageText += '<div class="layui-col-md1 agv-card" onclick="ShowDetails(\'' + eqp.EQID + '\')">'
+                            + '<div class="box-status" style="height: 100%;  ">'
+                            + '<div class="layui-card-header ' + stateColor + '" style="font-size: 20px; height: 23%">'
+                            + eqp.Name
+                            + '</div>'
+                            + '<div class="layui-card-body" style="opacity:1; height: 75% ">'
+                            + '<div style="height: 15%">Status: ' + eqp.Status + '</div>'
+                            + '<div style="height: 15%">OEE: ' + eqp.oee + '</div>'
+                            + '<div style="height: 15%"><i class="layui-icon layui-icon-location"></i>Type：' + eqp.Type + '</div>'
+                            + '<div style="height: 15%"><i class="layui-icon layui-icon-flag"></i>MTBA: ' + (eqp.Mtba * 1).toFixed(2) + '</div>'
+                            + '<div style="height: 15%"><i class="layui-icon layui-icon-release"></i>Runrate: ' + runrate + '</div>'
+                            + '<div style="position: relative; bottom: 0px; width: 100%; height: 20% ">'
+                            + '<div class="progress">'
+                            + '<div class="progress-bar" style="width: ' + runrate + '%; background-color: ' + color + '">' + runrate + '%</div>'
+                            + '</div></div></div></div></div>';
+                    }
+
+                    pageText += ' </div>';
+                }
+
+                document.getElementById("carouselcontent").innerHTML = pageText;
+                ins.reload(c_option);
+
+            }
+
+
+            function GenerateSummaryPieChart(typedata, statusdata) {
+                var myChart = echarts.init(document.getElementById('summaryPieChart'));
+                var xArr = [];
+                var yArr = [];
+
+
+                option = {
+                    tooltip: {
+                        trigger: 'item',
+                        formatter: '{a} <br/>{b}: {c} ({d}%)'
+                    },
+                    series: [
+                        {
+                            name: 'Access From',
+                            type: 'pie',
+                            selectedMode: 'single',
+                            radius: [0, '50%'],
+                            label: {
+                                position: 'inner',
+                                fontSize: 14
+                            },
+                            labelLine: {
+                                show: false
+                            },
+                            data: statusdata
+                        },
+                        {
+                            name: 'Access From',
+                            type: 'pie',
+                            radius: ['60%', '90%'],
+                            labelLine: {
+                                length: 3,
+                                normal: {
+                                    lineStyle: {
+                                        color: 'rgba(255, 255, 255, 0.3)'
+                                    },
+                                    smooth: 0.2,
+                                    size:30
+                                    //length: this.standSize / 50,
+                                    //length2: this.standSize / 100,
+                                }
+                            },
+
+                            data: typedata
+                        }
+                    ]
+                };
+                /*   */
+                // 使用刚指定的配置项和数据显示图表。
+                myChart.setOption(option);
+                window.addEventListener("resize", function () {
+                    myChart.resize();
+                });
+            }
+
+
+        });
+
+        function ShowDetails(EQID) {
+            //console.log(EQID);
+            var url = '/Statistics/EquipmentDashboard/equipmentdetails?eqp=' + EQID;
+
+            layui.use([], function () {
+                layer.open({
+                    title: 'Eqp Details'
+                    , type: 2
+                    , btn: ['确定']
+                    , content: url //'/Dashboard/BoxDetails'
+                    , area: ['90%', '90%']
+                    , success: function (layero, index) {
+                        ////向layer页面传值，传值主要代码
+                        //var body = layer.getChildFrame('body', index);
+                        //body.find("[id='equipment']").val(e.data.equipment);
+                        //body.find("[id='station']").val('Station_' + (e.data.value[0] + 1));
+                        //body.find("[id='datepicker']").val($("#datepicker").val());
+                    }
+                    , yes: function (index) {
+                        layer.close(index);
+                    }
+
+                });
+
+            });
+
+        }
+
+        function resizeFontSize() {
+            let fullheight = $(window).height();
+            $("html").css({ fontSize: fullheight / 9 });
+            $(window).resize(function () {
+                let fullheight = $(window).height();
+                $("html").css({ fontSize: fullheight / 9 });
+            });
+
+        }
+
+        function showFullScreen() {
+
+            /*判断是否全屏*/
+            let isFullscreen = document.fullScreenElement//W3C
+                || document.msFullscreenElement //IE11
+                || document.mozFullScreenElement //火狐
+                || document.webkitFullscreenElement //谷歌
+                || false;
+
+            if (!isFullscreen) {
+                let el = document.documentElement;
+                if (el.requestFullscreen) {
+                    el.requestFullscreen();
+                } else if (el.mozRequestFullScreen) {
+                    el.mozRequestFullScreen();
+                } else if (el.webkitRequestFullscreen) {
+                    el.webkitRequestFullscreen();
+                } else if (el.msRequestFullscreen) {
+                    el.msRequestFullscreen();
+                }
+                $("#fullScreen").removeClass("fa-expand").addClass("fa-compress");
+            }
+            else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.webkitCancelFullScreen) {
+                    document.webkitCancelFullScreen();
+                }
+                $("#fullScreen").removeClass("fa-compress").addClass("fa-expand");
+            }
+        }
+    </script>
+
+    <div class="header">
+        <div class="logo"><img src="/images/Logo/Logo_W_SMDi4_400x65_简.png" /> </div>
+        <div class="title"><span>Equipment Dashboard</span></div>
+        @*<a id="link" class="link" href="accboxdetails">acc details</a>*@
+        <a id="fullScreen" class="controlbox fa fa-expand" onclick="showFullScreen()"></a>
+         
+
+
+    </div>
+    <div class="detail-chart">
+        
+            <ul>
+                <li style="width:70%">
+                <div class="box">
+                    <div class="layui-carousel" id="carousel" style="background: rgba(0,0,0,0); margin: auto; ">
+                        <div carousel-item="" id="carouselcontent" style="">
+                        </div>
+                    </div>
+                       </div>
+                </li>
+                <li style="width:30%">
+                    <div class="box1">
+                        <div id="summaryPieChart" style=" width: 100%; height: 100%; margin: auto; margin-top: 0%;"></div>
+
+                    </div>
+                </li>
+            </ul>
+     
+    </div>
+ @*   <div class="detail-chart">
+        <ul>
+            <li style="width:30%">
+                <div class="box1">
+                    <div id="summaryPieChart" style=" width: 90%; height: 90%; margin: auto; margin-top: 3%;"></div>
+                </div>
+
+            </li>
+            <li style="width:70%">
+                <div class="box1">
+                </div>
+            </li>
+
+        </ul>
+
+    </div>*@
+
+    <div class="footer">
+        <span class="copyright">Copyright©@DateTime.Now.Year SMD All rights reserved.智能制造开发中心 版权所有</span>
+    </div>
+</body>
+
+
+
+</html>

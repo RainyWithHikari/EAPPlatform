@@ -1,0 +1,17 @@
+﻿
+@model EAPPlatform.ViewModel._Admin.FrameworkUserVMs.FrameworkUserListVM
+@using WalkingTec.Mvvm.Core.Extensions;
+@inject IStringLocalizer<Program> Localizer;
+
+<wt:searchpanel vm="@Model.Searcher" reset-btn="true"  grid-id="G3f62d3753bba43dda5c22db6e27f0e84" id="gridG3f62d3753bba43dda5c22db6e27f0e84">
+  <wt:row  items-per-row="ItemsPerRowEnum.Three">
+    <wt:textbox field="Searcher.ITCode"/>
+    <wt:textbox field="Searcher.Name"/>
+    <wt:combobox field="Searcher.IsValid" empty-text="@Localizer["Sys.All"]" id="g179dd58f1c9d4f77a6de7ce596330e48"/>
+  </wt:row>
+
+</wt:searchpanel>
+
+<wt:grid vm="@Model" url="/_Admin/FrameworkUser/SearchFrameworkUser"  id="G3f62d3753bba43dda5c22db6e27f0e84" search-panel-id="gridG3f62d3753bba43dda5c22db6e27f0e84"/>
+
+

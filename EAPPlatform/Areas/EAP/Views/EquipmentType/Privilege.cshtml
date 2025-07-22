@@ -1,0 +1,18 @@
+﻿@model EAPPlatform.ViewModel.EAP.EquipmentTypeVMs.EquipmentTypeVM;
+@using WalkingTec.Mvvm.Core.Extensions;
+@inject IStringLocalizer<Program> Localizer;
+
+<wt:form vm="@Model" url="/EAP/EquipmentType/Privilege">
+    <wt:tab>
+        <wt:tabcontents>
+            <wt:row items-per-row="ItemsPerRowEnum.One">
+                <wt:checkbox field="SelectedEquipmentTypeRole_IDs" item-url="/_Admin/FrameworkUser/GetFrameworkRoles" label-text="@Localizer["_Admin.Role"]" />
+            </wt:row>
+        </wt:tabcontents>
+    </wt:tab>
+    <wt:container align="AlignEnum.Right">
+        <wt:submitbutton text="@Localizer["Sys.Submit"]" />
+        <wt:closebutton text="@Localizer["Sys.Close"]" />
+    </wt:container>
+    <wt:hidden field="Entity.ID" />
+</wt:form>

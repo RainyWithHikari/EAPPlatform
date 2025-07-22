@@ -1,0 +1,17 @@
+﻿
+@model EAPPlatform.ViewModel.EAP.EquipmentTypeConfigurationVMs.EquipmentTypeConfigurationListVM
+@using WalkingTec.Mvvm.Core.Extensions;
+@inject IStringLocalizer<Program> Localizer;
+
+<wt:searchpanel vm="@Model.Searcher" reset-btn="true"  grid-id="G1bec13a06c3d419db9c576f649b6cfa7" id="gridG1bec13a06c3d419db9c576f649b6cfa7">
+  <wt:row  items-per-row="ItemsPerRowEnum.Three">
+    <wt:combobox field="Searcher.TypeNameId"  item-url="/EAP/EquipmentTypeConfiguration/GetEquipmentTypes" empty-text="@Localizer["Sys.All"]" id="g598f38f699b84b35aaf36b958c63a680"/>
+    <wt:textbox field="Searcher.ConfigurationItem"/>
+    <wt:textbox field="Searcher.ConfigurationValue"/>
+  </wt:row>
+
+</wt:searchpanel>
+
+<wt:grid vm="@Model" url="/EAP/EquipmentTypeConfiguration/SearchEquipmentTypeConfiguration"  id="G1bec13a06c3d419db9c576f649b6cfa7" search-panel-id="gridG1bec13a06c3d419db9c576f649b6cfa7"/>
+
+

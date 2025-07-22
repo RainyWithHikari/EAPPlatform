@@ -1,0 +1,6 @@
+{
+    "imports": {
+        "three": "/three/build/three.module.js",
+        "three/addons/": "/three/examples/jsm/"
+    }
+}

@@ -1,0 +1,177 @@
+﻿
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="~/Content/equipmentDetails.css?v=0.2" />
+    @*<script type="text/javascript" src="~/Scripts/jquery.js"></script>*@
+    <link rel="stylesheet" href="~/Scripts/layui/css/layui.css" media="all">
+    <script type="text/javascript" src="~/Scripts/layui/layui.js"></script>
+    <link rel="stylesheet" href="~/Content/font-awesome/css/font-awesome.css">
+    <link rel="stylesheet" href="~/Content/font/iconfont.css">
+    <link rel="stylesheet" href="~/Content/bootstrap.min.css" />
+    <link rel="shortcut icon" href="~/Scripts/favicon.ico" />
+    <script type="text/javascript" src="~/Scripts/echartjs/dist/echarts.js"></script>
+    <script type="text/javascript" src="~/Scripts/bootstrap.bundle.min.js"></script>
+    <script src="~/Scripts/layui/layui.table.formdate.js"></script>
+    @* <link rel="stylesheet" href="/bootstrap-5.1.3-dist/css/bootstrap.css" />*@
+    <script type="module" charset="utf-8" src="~/Scripts/EquipmentDetails.js?v=0.1"></script>
+
+
+
+</head>
+<body>
+
+    <script>
+        var eqp = "@ViewBag.eqp";
+    </script>
+    <script type="text/html" id="toolbar1">
+        <a class="layui-btn layui-btn-success layui-btn-xs" lay-event="exportStatusDetails">Export Status Report</a>
+    </script>
+    <script type="text/html" id="toolbar2">
+        <a class="layui-btn layui-btn-success layui-btn-xs" lay-event="exportAlarmDetails">Export Alarm Report</a>
+    </script>
+    <div class="device-dashboard">
+        <!-- 设备基础信息卡片 -->
+        <div class="row">
+            <div class="card device-info col-4">
+                <div class="info-row">
+                    <div><strong>EQID:</strong> <span id="equipment"></span></div>
+                    <div id="datepicker-container">
+                        <i class="layui-icon icon-calendar">&#xe637;</i>
+                        <span id="datepicker"></span>
+                    </div>
+                    @*<div><strong>Date:</strong> <i class="layui-icon icon-calendar">&#xe637;</i> <span id="datepicker"></span></div>*@
+                </div>
+                <div class="info-row">
+                    <div>
+                        <strong>Status:</strong>
+                        <span id="status" class="status-badge running"></span>
+                    </div>
+                    <div><strong>Run Rate:</strong> <span id="runrate"></span></div>
+                    <div><strong>Down Rate:</strong> <span id="downrate"></span></div>
+                </div>
+                <form class="layui-form" action="">
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">Start</label>
+
+                        <div class="layui-input-block">
+                            <!--<button type="button" id="btn-start-date" class="layui-btn layui-btn-primary">
+                                <i class="layui-icon">&#xe637;</i> <span id="start-date-text" name="startdate"></span>
+                            </button>-->
+                            <!-- 隐藏的 input，用于 form 提交 -->
+                            <!--<input type="hidden" name="startdate" id="start-date-hidden" />-->
+                            <input id="startdateFilter" type="text" name="startdate" required lay-verify="required" placeholder="Select Date" autocomplete="off" class="layui-input">
+                        </div>
+
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">End</label>
+                        <div class="layui-input-block">
+                            @*<button type="button" id="btn-end-date" class="layui-btn layui-btn-primary">
+                                <i class="layui-icon">&#xe637;</i> <span id="end-date-text" name="date"></span>
+                            </button>
+                            <input type="hidden" name="date" id="end-date-hidden" />*@
+                            <input id="enddateFilter" type="text" name="date" required lay-verify="required" placeholder="Select Date" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+
+                    @*<div class="layui-form-mid layui-word-aux">eg. 导出2024/11/11报表数据，选择：开始=11/11, 结束=11/11</div>*@
+                    @*<div class="layui-form-item">
+            <label class="layui-form-label">报表时间范围</label>
+            <div class="layui-input-block">
+                <input type="radio" name="Duration" value="single" title="单日" checked>
+                <input type="radio" name="Duration" value="multiple" title="前七天(包含选择日期）">
+            </div>
+        </div>*@
+                    @*<div class="layui-form-item">
+            <label class="layui-form-label">设备</label>
+            <div class="layui-input-block">
+                <select name="equipmentFilter" lay-verify="required">
+                </select>
+            </div>
+        </div>*@
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">Report</label>
+                        <div class="layui-input-block">
+
+                            @*<input type="checkbox" name="report[alarmcode]" title="Alarm Code 统计报表" value="alarm_code_report" checked>
+        <input type="checkbox" name="report[fail]" title="拆料失败明细" value="fail_report" checked>*@
+                            <input type="checkbox" name="report[alarm]" title="Alarms" value="alarm_report" checked>
+                            <input type="checkbox" name="report[status]" title="Status" value="status_report" checked>
+                            <input type="checkbox" name="report[trends]" title="Trends" value="trends_report" checked>
+                            @*<input type="checkbox" name="report[output]" title="生产明细" value="output_report">*@
+
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <div class="layui-input-block">
+                            <button class="layui-btn" lay-submit lay-filter="formDownload" id="formDownload">Download</button>
+                            <button type="reset" class="layui-btn layui-btn-primary">Reset</button>
+                        </div>
+                    </div>
+                    <div class="layui-form-mid layui-word-aux">导出报表说明：</div>
+                    <div class="layui-form-mid layui-word-aux">1. 报表数据统计时间：9:00 am 至 次日 9:00 am </div>
+                    <div class="layui-form-mid layui-word-aux">2. 如需导出单日报表，请将开始与结束设置为同一日期</div>
+                </form>
+                @*<div class="info-footer">
+            Last Updated: <span id="statusLastUpdate">2025-07-15 14:00</span>
+        </div>*@
+            </div>
+            <div class="card col-8 tab-section layui-tab" lay-filter="deviceTab">
+                <ul class="layui-tab-title custom-tab">
+                    <li class="layui-this">Overview</li>
+                    <li>Trend</li>
+                    <li>Alarms</li>
+                    <li>Parameters</li>
+                </ul>
+
+                <div class="layui-tab-content">
+                    <!-- Overview -->
+                    <div class="layui-tab-item layui-show">
+
+                        <div id="status-summary" class="status-summary"></div>
+
+                        <div id="datechart" class="chart-container">
+
+                        </div>
+                    </div>
+
+                    <!-- Trend -->
+                    <div class="layui-tab-item">
+                        <div class="charts-vertical">
+                            <div id="trendrunrate" class="chart-bar"></div>
+                            <div id="trendmtba" class="chart-bar"></div>
+                        </div>
+
+                    </div>
+
+                    <!-- Alarm List -->
+                    <div class="layui-tab-item">
+                        <div class="alarm-filter">
+                            <label>Start</label><input type="text" id="alarmDateStart" class="layui-input" placeholder="Start Date" />
+                            <label>End</label><input type="text" id="alarmDateEnd" class="layui-input" placeholder="End Date" />
+                        </div>
+                        <table class="layui-hide" id="alarmhist"></table>
+                    </div>
+
+                    <!-- Parameters -->
+                    <div class="layui-tab-item">
+                        <table class="layui-hide" id="paramlist"></table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+       
+    </div>
+
+
+
+</body>
+
+
+
+</html>

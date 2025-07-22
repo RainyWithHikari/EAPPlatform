@@ -1,0 +1,47 @@
+﻿@{
+    ViewBag.Title = "下载报表";
+}
+<html>
+<head>
+    <link rel="stylesheet" href="~/Content/font-awesome/css/font-awesome.css">
+    <link rel="stylesheet" href="~/Content/font/iconfont.css">
+    <link rel="stylesheet" href="~/Content/bootstrap.min.css" />
+    <script type="text/javascript" src="~/Scripts/jquery-3.4.1.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/echartjs/dist/echarts.js"></script>
+
+    <link rel="shortcut icon" href="~/Scripts/favicon.ico" />
+    <link rel="stylesheet" href="~/Scripts/layui/css/layui.css" media="all">
+    <script type="text/javascript" src="~/Scripts/layui/layui.js"></script>
+
+</head>
+<body>
+    <div class="dashboard-container" style="padding:3%;">
+        <form class="layui-form" action="">
+            <div class="layui-form-item">
+                
+                <div class="layui-input-block" >
+                    <input class="layui-input" type="text" id="pnList" @*style="margin-left: 10px;*@ disabled />
+                </div>
+            </div>
+           
+            <blockquote class="layui-elem-quote">常见问题排查：如果下载失败，请先确认合料机是否处于开机状态，且IP地址无变化。</blockquote>
+        </form>
+
+    </div>
+    <script>
+        layui.use(['jquery', 'form', 'laydate'], function () {
+            var laydate = layui.laydate
+                , form = layui.form
+                , $ = layui.jquery;
+
+            var receivedArray = window.parent.myArray;
+            console.log(receivedArray);  // 打印接收到的数组
+
+            var testdata = document.getElementById('pnList');
+            console.log(testdata)
+        });
+    </script>
+
+</body>
+</html>

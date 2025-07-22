@@ -1,0 +1,33 @@
+﻿
+@model EAPPlatform.ViewModel.EAP.EquipmentVMs.EquipmentVM
+@using WalkingTec.Mvvm.Core.Extensions;
+@inject IStringLocalizer<Program> Localizer;
+
+<wt:container>
+  <wt:form vm="@Model"  >
+    <wt:row  items-per-row="ItemsPerRowEnum.Two">
+      <wt:display field="Entity.EQID"/>
+      <wt:display field="Entity.EquipmentType.Name"/>
+    </wt:row>
+    <wt:row  items-per-row="ItemsPerRowEnum.Two">
+      <wt:display field="Entity.Name"/>
+      <wt:display field="Entity.CreateTime"/>
+    </wt:row>
+    <wt:row  items-per-row="ItemsPerRowEnum.Two">
+      <wt:display field="Entity.UpdateTime"/>
+      <wt:display field="Entity.CreateBy"/>
+    </wt:row>
+    <wt:row  items-per-row="ItemsPerRowEnum.Two">
+      <wt:display field="Entity.UpdateBy"/>
+      <wt:display field="Entity.IsValid"/>
+    </wt:row>
+
+    <wt:container align="AlignEnum.Right">
+      <wt:closebutton  text="@Localizer["Sys.Close"]"/>
+    </wt:container>
+
+  </wt:form>
+
+</wt:container>
+
+

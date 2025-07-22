@@ -1,0 +1,198 @@
+﻿@{
+    Layout = null;
+}
+
+
+<html>
+<head>
+    <link rel="stylesheet" href="/layui/css/layui.css" media="all">
+    <link rel="stylesheet" href="/font/iconfont.css">
+    <link rel="stylesheet" href="/font-awesome/css/font-awesome.css">
+    <link rel="shortcut icon" href="/favicon.ico" />
+</head>
+<body>
+    @*    <script src="/jquery.min.js"></script>
+    <script src="/echarts/echarts.min.js"></script>
+    <script src="/layui/layui.js"></script>*@
+
+    <table class="layui-hide" id="eqpconfig" lay-filter="eqpconfig"></table>
+
+
+
+
+
+
+
+    <script type="text/html" id="toolbar">
+        <a class="layui-btn layui-btn layui-btn-xs" lay-event="testConn">测试连接</a>
+    </script>
+
+    <script>
+        layui.config({
+            version: 'V1.0' //为了更新 js 缓存，可忽略
+
+        });
+
+        layui.use(['layer', 'table', 'upload', 'element', 'laydate'], function () {
+            var layer = layui.layer //弹层
+                , table = layui.table //表格
+                , form = layui.form
+                , laydate = layui.laydate
+                ;
+
+
+            laydate.render({
+                elem: '#datepicker1'
+                , trigger: 'click'
+                , done: function (value, date, endDate) {
+                    // getData();
+
+                }
+                //, value: date
+            });
+
+            ectable = table.render({
+                elem: '#eqpconfig'
+                , height: 'full-200'
+                , url: '/EAP/Equipment/GetConfigutionByEquipmentID/' //数据接口
+                , title: '设备配置'
+                , page: true //开启分页
+                // , toolbar: 'default' //开启工具栏，此处显示默认图标，可以自定义模板，详见文档
+                // , totalRow: true //开启合计行
+                , id: "filepathconfig"
+                , limits: [500]
+                , limit: 500
+                , defaultToolbar: ['filter']
+                , cols: [[ //表头
+                    //{ field: 'ID', title: '配置项目', sort: true },
+                    { field: 'ConfigurationItem', title: '配置项目', sort: true },
+                    { field: 'ConfigurationName', title: '配置名称', sort: true },
+                    { field: 'ConfigurationValue', title: '配置值', sort: true, edit: true },
+                ]]
+                , where: {//这里传参 向后台
+                    id: "@ViewBag.id"
+                }
+            });
+
+            table.on('edit(eqpconfig)', function (obj) { //注：edit是固定事件名，tableEvent是table原始容器的属性 lay-filter="对应的值"
+
+                layer.confirm('is not?', { icon: 3, title: '修改确认', content: obj.value }, function (index) {
+
+                    $.ajax({
+                        url: '/EAP/Equipment/SendModifyRequest/',//控制器活动,返回一个分部视图,并且给分部视图传递数据.
+                        data: {
+                            "ID": obj.data.ID,
+                            "value": obj.value,
+                            "field": obj.field
+                        },//传给服务器的数据(即后台AddUsers()方法的参数,参数类型要一致才可以)
+                        type: 'POST',
+                        contentType: 'application/x-www-form-urlencoded; charset=UTF-8',//数据类型必须有
+                        async: false,
+                        success: function (data) {
+                           // layer.msg(data.message);
+
+                            layer.msg(data.message, {
+                                time: 2000,
+                                end: function () {
+
+                                    parent.layer.close(index);
+                                    //parent.location.reload();
+                                    ectable.reload();
+                                }
+                            });
+
+
+                            //ectable.reload();
+
+                        },
+                        error: function (message) {
+                            alert('error!');
+                        }
+                    });
+                    layer.close(index);
+                },
+                    function (index) {
+                        layer.msg('取消修改');
+                        ectable.reload();
+                    }
+
+                );
+            });
+
+            table.on('tool(eqpconfig)', function (obj) {
+                console.log(obj);
+                var event = obj.event, //当前单元格事件属性值
+                    selectdata = obj.data;
+                if (event === 'testConn') {
+                    $.ajax({
+                        url: '/EAP/EqpConfig/TestConnection',//控制器活动,返回一个分部视图,并且给分部视图传递数据.
+                        data: {
+                            "data": selectdata,
+                        },
+                        type: 'POST',
+                        contentType: 'application/x-www-form-urlencoded; charset=UTF-8',//数据类型必须有
+                        async: false,
+                        success: function (data) {
+                            layer.open({ content: data.message });
+                        },
+                        error: function (message) {
+                            alert('测试失败，请联系管理员!');
+                        }
+                    });
+                    //console.log('123');
+                }
+
+            });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        });
+
+
+        $(function () {
+            var date = new Date();
+            date.setDate(date.getDate() - 1);
+            $("#datepicker1").val(date.format("yyyy-MM-dd"));
+            //  getData();
+
+        })//设置时间初始值
+
+        Date.prototype.format = function (fmt) {
+            var o = {
+                "M+": this.getMonth() + 1,                 //月份
+                "d+": this.getDate(),                    //日
+                "h+": this.getHours(),                   //小时
+                "m+": this.getMinutes(),                 //分
+                "s+": this.getSeconds(),                 //秒
+                "q+": Math.floor((this.getMonth() + 3) / 3), //季度
+                "S": this.getMilliseconds()             //毫秒
+            };
+            if (/(y+)/.test(fmt)) {
+                fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+            }
+            for (var k in o) {
+                if (new RegExp("(" + k + ")").test(fmt)) {
+                    fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+                }
+            }
+            return fmt;
+        }
+
+    </script>
+
+</body>
+
+
+</html>
+

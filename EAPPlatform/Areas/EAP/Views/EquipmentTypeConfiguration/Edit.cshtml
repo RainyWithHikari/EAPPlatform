@@ -1,0 +1,30 @@
+﻿
+@model EAPPlatform.ViewModel.EAP.EquipmentTypeConfigurationVMs.EquipmentTypeConfigurationVM
+@using WalkingTec.Mvvm.Core.Extensions;
+@inject IStringLocalizer<Program> Localizer;
+
+<wt:container>
+  <wt:form vm="@Model" url="/EAP/EquipmentTypeConfiguration/Edit" >
+    <wt:row  items-per-row="ItemsPerRowEnum.Two">
+      <wt:combobox field="Entity.TypeNameId"  item-url="/EAP/EquipmentTypeConfiguration/GetEquipmentTypes" empty-text="@Localizer["Sys.PleaseSelect"]" id="g6cc0dc66a8a44eec8efac2274070b6b0" multi-select="false"/>
+      <wt:textbox field="Entity.ConfigurationItem"/>
+    </wt:row>
+    <wt:row  items-per-row="ItemsPerRowEnum.Two">
+      <wt:textbox field="Entity.ConfigurationName" id="g6837138594"/>
+      <wt:textbox field="Entity.ConfigurationValue"/>
+    </wt:row>
+    <wt:row  items-per-row="ItemsPerRowEnum.Two">
+      <wt:textbox field="Entity.DisplayOrder" id="g3080634165"/>
+    </wt:row>
+
+    <wt:container align="AlignEnum.Right">
+      <wt:submitbutton  text="@Localizer["Sys.Submit"]"/>
+      <wt:closebutton  text="@Localizer["Sys.Close"]"/>
+    </wt:container>
+
+    <wt:hidden field="Entity.ID" />
+  </wt:form>
+
+</wt:container>
+
+

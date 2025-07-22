@@ -1,0 +1,200 @@
+﻿@model WalkingTec.Mvvm.Core.BaseVM
+@using System.Text.Json
+
+<div class="layui-row layui-col-space15" id="frontpage">
+  <div class="layui-col-md12">
+    <div class="layui-row layui-col-space15">
+      <div class="layui-col-md6">
+        <div class="layui-card">
+          <div class="layui-card-header">快捷方式</div>
+          <div class="layui-card-body">
+
+            <div class="layui-carousel layadmin-carousel layadmin-shortcut">
+              <div carousel-item>
+                <ul class="layui-row layui-col-space10">
+                  <li class="layui-col-xs3">
+                    <a lay-href="_Admin/FrameworkUser/Index">
+                      <i class="layui-icon layui-icon-username"></i>
+                      <cite>用户</cite>
+                    </a>
+                  </li>
+                  <li class="layui-col-xs3">
+                    <a lay-href="_Admin/FrameworkRole/Index">
+                      <i class="layui-icon layui-icon-tabs"></i>
+                      <cite>角色</cite>
+                    </a>
+                  </li>
+                  <li class="layui-col-xs3">
+                    <a lay-href="_Admin/FrameworkMenu/Index">
+                      <i class="layui-icon layui-icon-app"></i>
+                      <cite>菜单</cite>
+                    </a>
+                  </li>
+                  <li class="layui-col-xs3">
+                    <a lay-href="_Admin/FrameworkGroup/Index">
+                      <i class="layui-icon layui-icon-user"></i>
+                      <cite>用户组</cite>
+                    </a>
+                  </li>
+                  <li class="layui-col-xs3">
+                    <a lay-href="_Admin/DataPrivilege/Index">
+                      <i class="layui-icon layui-icon-auz"></i>
+                      <cite>数据权限</cite>
+                    </a>
+                  </li>
+                  <li class="layui-col-xs3">
+                    <a lay-href="_Admin/ActionLog/Index">
+                      <i class="layui-icon layui-icon-console"></i>
+                      <cite>日志</cite>
+                    </a>
+                  </li>
+                  <li class="layui-col-xs3">
+                    <a href="/_codegen/index" target="_blank">
+                      <i class="layui-icon layui-icon-template-1"></i>
+                      <cite>代码生成</cite>
+                    </a>
+                  </li>
+                  <li class="layui-col-xs3">
+                    <a href="https://wtmdoc.walkingtec.cn" target="_blank">
+                      <i class="layui-icon layui-icon-read"></i>
+                      <cite>文档</cite>
+                    </a>
+                  </li>
+                </ul>
+
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+      <div class="layui-col-md6">
+        <div class="layui-card">
+          <div class="layui-card-header">EAP</div>
+          <div class="layui-card-body">
+
+            <div class="layui-carousel layadmin-carousel layadmin-backlog">
+              <div carousel-item>
+                <ul class="layui-row layui-col-space10">
+                  <li class="layui-col-xs6">
+                    <a class="layadmin-backlog-body">
+
+                      <h3>Star</h3>
+                      <p><cite id="githubstar"></cite></p>
+                    </a>
+                  </li>
+                  <li class="layui-col-xs6">
+                    <a href="https://github.com/dotnetcore/WTM/network/members" class="layadmin-backlog-body"
+                       target="_blank">
+                      <h3>Fork</h3>
+                      <p><cite id="githubfork"></cite></p>
+                    </a>
+                  </li>
+                  <li class="layui-col-xs6">
+                    <a href="https://github.com/dotnetcore/WTM/watchers" class="layadmin-backlog-body"
+                       target="_blank">
+                      <h3>Watch</h3>
+                      <p><cite id="githubwatch"></cite></p>
+                    </a>
+                  </li>
+                  <li class="layui-col-xs6">
+                    <a href="https://github.com/dotnetcore/WTM/issues" class="layadmin-backlog-body" target="_blank">
+                      <h3>Issue</h3>
+                      <p><cite id="githubissue"></cite></p>
+                    </a>
+                  </li>
+                </ul>
+                <ul class="layui-row layui-col-space10">
+                  <li class="layui-col-xs12">
+                    <span style="font-size:16px;line-height:50px;">WTM是纯开源免费框架，如果喜欢，来GitHub赏个星~~</span>
+
+                    <p style="text-align:center">
+                      <a href="https://github.com/dotnetcore/wtm" target="_blank"
+                         style="background-color:#eee;background-image:linear-gradient(to bottom, #fcfcfc 0, #eee 100%);background-repeat:no-repeat;border:1px solid #d5d5d5;color:#333;padding:3px 10px 3px 8px;font-size:16px;line-height:22px">
+                        <span width="20"
+                              style="width:20px;height:20px;font-size:16px;line-height:22px;box-sizing:border-box; background-size:100% 100%; background-image:url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB2ZXJzaW9uPSIxLjEiIGlkPSJMYXllcl8xIiB4PSIwcHgiIHk9IjBweCIgd2lkdGg9IjQwcHgiIGhlaWdodD0iNDBweCIgdmlld0JveD0iMTIgMTIgNDAgNDAiIGVuYWJsZS1iYWNrZ3JvdW5kPSJuZXcgMTIgMTIgNDAgNDAiIHhtbDpzcGFjZT0icHJlc2VydmUiPjxwYXRoIGZpbGw9IiMzMzMzMzMiIGQ9Ik0zMiAxMy40Yy0xMC41IDAtMTkgOC41LTE5IDE5YzAgOC40IDUuNSAxNS41IDEzIDE4YzEgMC4yIDEuMy0wLjQgMS4zLTAuOWMwLTAuNSAwLTEuNyAwLTMuMiBjLTUuMyAxLjEtNi40LTIuNi02LjQtMi42QzIwIDQxLjYgMTguOCA0MSAxOC44IDQxYy0xLjctMS4yIDAuMS0xLjEgMC4xLTEuMWMxLjkgMC4xIDIuOSAyIDIuOSAyYzEuNyAyLjkgNC41IDIuMSA1LjUgMS42IGMwLjItMS4yIDAuNy0yLjEgMS4yLTIuNmMtNC4yLTAuNS04LjctMi4xLTguNy05LjRjMC0yLjEgMC43LTMuNyAyLTUuMWMtMC4yLTAuNS0wLjgtMi40IDAuMi01YzAgMCAxLjYtMC41IDUuMiAyIGMxLjUtMC40IDMuMS0wLjcgNC44LTAuN2MxLjYgMCAzLjMgMC4yIDQuNyAwLjdjMy42LTIuNCA1LjItMiA1LjItMmMxIDIuNiAwLjQgNC42IDAuMiA1YzEuMiAxLjMgMiAzIDIgNS4xYzAgNy4zLTQuNSA4LjktOC43IDkuNCBjMC43IDAuNiAxLjMgMS43IDEuMyAzLjVjMCAyLjYgMCA0LjYgMCA1LjJjMCAwLjUgMC40IDEuMSAxLjMgMC45YzcuNS0yLjYgMTMtOS43IDEzLTE4LjFDNTEgMjEuOSA0Mi41IDEzLjQgMzIgMTMuNHoiLz48L3N2Zz4=')">&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                        <span>Stars <cite id="githubstars"></cite></span>
+                      </a>
+                    </p>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="layui-col-md6">
+        <div class="layui-card">
+          <div class="layui-card-header">控制器</div>
+          <div class="layui-card-body">
+                  <wt:chart is-horizontal="true" show-legend="true" show-tooltip="true" type="Bar"  height="300" trigger-url="/Home/GetActionChart" />
+          </div>
+        </div>
+      </div>
+      <div class="layui-col-md6">
+        <div class="layui-card">
+          <div class="layui-card-header">模型</div>
+          <div class="layui-card-body">
+            <wt:chart  show-legend="false" show-tooltip="true" type="Pie" height="300" trigger-url="/Home/GetModelChart" />
+          </div>
+        </div>
+      </div>
+     @* <div class="layui-col-md12">
+        <div class="layui-card">
+          <div class="layui-card-header">模拟数据</div>
+          <div class="layui-card-body">
+            <wt:chart is-horizontal="true" type="Scatter" height="400" trigger-url="/Home/GetSampleChart"  radius="50" name-x="X" name-y="Y" name-category="C" name-addition="A"/>
+
+          </div>
+        </div>
+      </div>*@
+    </div>
+  </div>
+
+  @*<div class="layui-col-md4">
+  
+
+  </div>*@
+
+</div>
+<script>
+  $("#frontpage").parents(".layui-card").css("background-color", "#eee").css("height","unset");
+  $.get("/Home/GetGithubInfo", function (r) {
+    if (r === undefined || r === null) {
+      return;
+    }
+    $("#githubstar").html(r.stargazers_count);
+    $("#githubstars").html(r.stargazers_count);
+    $("#githubfork").html(r.forks_count);
+    $("#githubwatch").html(r.subscribers_count);
+    $("#githubissue").html(r.open_issues_count);
+  });
+
+  //区块轮播切换
+  layui.use(['admin', 'carousel'], function () {
+    var $ = layui.$
+      , admin = layui.admin
+      , carousel = layui.carousel
+      , element = layui.element
+      , device = layui.device();
+
+    //轮播切换
+    $('.layadmin-carousel').each(function () {
+      var othis = $(this);
+      carousel.render({
+        elem: this
+        , width: '100%'
+        , arrow: 'none'
+        , interval: othis.data('interval')
+        , autoplay: othis.data('autoplay') === true
+        , trigger: (device.ios || device.android) ? 'click' : 'hover'
+        , anim: othis.data('anim')
+      });
+    });
+
+    element.render('progress');
+
+  });
+
+</script>
